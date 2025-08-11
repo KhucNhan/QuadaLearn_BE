@@ -1,10 +1,12 @@
 package com.codegym.springbootjwtdemo.controller;
 
 
+import com.codegym.springbootjwtdemo.model.Role;
 import com.codegym.springbootjwtdemo.model.User;
 import com.codegym.springbootjwtdemo.model.dto.UserDTO;
 import com.codegym.springbootjwtdemo.config.service.JwtResponse;
 import com.codegym.springbootjwtdemo.config.service.JwtService;
+import com.codegym.springbootjwtdemo.service.RoleService;
 import com.codegym.springbootjwtdemo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,9 @@ public class UserRestController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RoleService roleService;
 
     /* ---------------- GET ALL USER ------------------------ */
     @RequestMapping(value = "/users", method = RequestMethod.GET)
@@ -74,4 +79,10 @@ public class UserRestController {
         return ResponseEntity.ok(new JwtResponse(userInfo.getId(), jwt,
                 userInfo.getUsername(), userInfo.getUsername(), userDetails.getAuthorities()));
     }
+
+    @GetMapping("/roles")
+    public ResponseEntity<List<Role>> getAllRoles() {
+        return new ResponseEntity<>(roleService.findAll(), HttpStatus.OK);
+    }
+
 }

@@ -42,11 +42,14 @@ public class UserService implements UserDetailsService {
     }
 
     public boolean add(User user) {
-        String passwordEncode = passwordEncoder.encode(user.getPassword());
-        user.setPassword(passwordEncode);
+        if (iUserRepository.findByUsername(user.getUsername()).isPresent()) {
+            return false;
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         iUserRepository.save(user);
         return true;
     }
+
 
     public void delete(Long id) {
         iUserRepository.deleteById(id);
