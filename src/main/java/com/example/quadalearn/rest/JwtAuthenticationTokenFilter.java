@@ -16,7 +16,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
@@ -33,24 +32,39 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             String jwt = getJwtFromRequest(request);
+
             if (jwt != null && jwtService.validateJwtToken(jwt)) {
-                String username = jwtService.getUsernameFromJwtToken(jwt);
-                UserDetails userDetails = userService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
+                // Lấy email từ JWT
+                String email = jwtService.getEmailFromJwtToken(jwt);
+
+                // Load user từ email
+                UserDetails userDetails = userService.loadUserByUsername(email);
+
+                // Tạo Authentication object
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                // Set Authentication vào SecurityContext
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {
-            logger.error("Can NOT set user authentication -> Message: {}", e);
+            logger.error("Can NOT set user authentication -> Message: " + e.getMessage(), e);
         }
+
         filterChain.doFilter(request, response);
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.replace("Bearer ", "");
+            return authHeader.substring(7); // cắt "Bearer "
         }
         return null;
     }

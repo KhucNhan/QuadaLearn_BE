@@ -4,17 +4,23 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "roles")
+@Table(name = "questions")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Role {
+public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "test_id")
+    private Test test;
+
+    private String content;
+    private String type;
+    private String answerKey;
+    private String knowledgeTag;
 }

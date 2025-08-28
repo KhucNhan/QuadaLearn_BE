@@ -7,11 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
+public class TestDTO {
     private Long id;
-    private String email;
     private String name;
-    private String currentLevel;
-    private String goal;
-    private String roleName; // thay vì object Role, chỉ cần name
+    private String description;
+    private String type;
+    private String createdBy; // email hoặc name của user
 }

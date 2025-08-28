@@ -1,19 +1,17 @@
+// src/main/java/com/example/quadalearn/service/RoleService.java
 package com.example.quadalearn.service;
 
 import com.example.quadalearn.model.Role;
-import com.example.quadalearn.repository.IRoleRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
-@Service
-public class RoleService {
-    @Autowired
-    private IRoleRepository roleRepository;
+public interface RoleService {
+    Role create(Role role);
+    Role update(Role role);
+    void delete(Long id);
 
-    public List<Role> findAll() {
-        return roleRepository.findAll();
-    }
-
+    Optional<Role> findById(Long id);
+    Optional<Role> findByName(String name);
+    List<Role> findAll();
 }
