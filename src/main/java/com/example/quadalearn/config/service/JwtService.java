@@ -1,15 +1,11 @@
 package com.example.quadalearn.config.service;
 
-import com.example.quadalearn.model.UserPrinciple;
-
-import lombok.Getter;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-
-
+import com.example.quadalearn.model.UserPrincipal;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
@@ -21,7 +17,7 @@ public class JwtService {
     private static final long EXPIRE_TIME = 86400000000L;
 
     public String generateTokenLogin(Authentication authentication) {
-        UserPrinciple userPrincipal = (UserPrinciple) authentication.getPrincipal();
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setSubject((userPrincipal.getEmail()))
