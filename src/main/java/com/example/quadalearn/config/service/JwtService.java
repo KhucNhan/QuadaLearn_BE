@@ -2,6 +2,7 @@ package com.example.quadalearn.config.service;
 
 import com.example.quadalearn.model.UserPrinciple;
 
+import lombok.Getter;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,7 @@ public class JwtService {
         UserPrinciple userPrincipal = (UserPrinciple) authentication.getPrincipal();
 
         return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
+                .setSubject((userPrincipal.getEmail()))
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date((new Date()).getTime() + EXPIRE_TIME * 1000))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
@@ -54,7 +55,7 @@ public class JwtService {
         return false;
     }
 
-    public String getUsernameFromJwtToken(String token) {
+    public String getEmailFromJwtToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(SECRET_KEY)
                 .build()
