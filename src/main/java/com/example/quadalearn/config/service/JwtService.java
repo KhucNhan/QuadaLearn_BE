@@ -1,6 +1,6 @@
 package com.example.quadalearn.config.service;
 
-import com.example.quadalearn.model.UserPrinciple;
+import com.example.quadalearn.model.UserPrincipal;
 
 import lombok.Getter;
 import org.springframework.security.core.Authentication;
@@ -21,7 +21,7 @@ public class JwtService {
     private static final long EXPIRE_TIME = 86400000000L;
 
     public String generateTokenLogin(Authentication authentication) {
-        UserPrinciple userPrincipal = (UserPrinciple) authentication.getPrincipal();
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setSubject((userPrincipal.getEmail()))
