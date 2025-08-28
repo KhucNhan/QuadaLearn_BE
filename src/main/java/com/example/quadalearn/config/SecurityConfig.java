@@ -4,6 +4,7 @@ import com.example.quadalearn.rest.CustomAccessDeniedHandler;
 import com.example.quadalearn.rest.JwtAuthenticationTokenFilter;
 import com.example.quadalearn.rest.RestAuthenticationEntryPoint;
 import com.example.quadalearn.service.UserService;
+import com.example.quadalearn.service.impl.UserServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,11 +28,11 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final UserService userService;
+    private final UserServiceImpl userService;
     private final JwtAuthenticationTokenFilter jwtAuthenticationFilter;
     private final PasswordEncoder passwordEncoder;
 
-    public SecurityConfig(UserService userService,
+    public SecurityConfig(UserServiceImpl userService,
                           JwtAuthenticationTokenFilter jwtAuthenticationFilter,
                           PasswordEncoder passwordEncoder) {
         this.userService = userService;
@@ -70,6 +71,7 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        // UserService phải implements UserDetailsService
         authProvider.setUserDetailsService(userService);
         authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
