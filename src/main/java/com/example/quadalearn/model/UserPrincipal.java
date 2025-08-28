@@ -9,27 +9,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 @Getter
-public class UserPrinciple implements UserDetails {
+public class UserPrincipal implements UserDetails {
     private static final long serialVersionUID = 1L;
 
     private final String email;
     private final String password;
     private final Collection<? extends GrantedAuthority> roles;
 
-    public UserPrinciple(String email, String password,
+    public UserPrincipal(String email, String password,
                          Collection<? extends GrantedAuthority> roles) {
         this.email = email;
         this.password = password;
         this.roles = roles;
     }
 
-    public static UserPrinciple build(User user) {
+    public static UserPrincipal build(User user) {
         List<GrantedAuthority> authorities = new ArrayList<>();
         for (Role role : user.getRoles()) {
             authorities.add(new SimpleGrantedAuthority(role.getName()));
         }
 
-        return new UserPrinciple(
+        return new UserPrincipal(
                 user.getEmail(),
                 user.getPassword(),
                 authorities

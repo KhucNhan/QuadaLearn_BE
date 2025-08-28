@@ -1,7 +1,7 @@
-// src/main/java/com/example/quadalearn/service/impl/UserServiceImpl.java
 package com.example.quadalearn.service.impl;
 
 import com.example.quadalearn.model.User;
+import com.example.quadalearn.model.UserPrincipal;
 import com.example.quadalearn.repository.UserRepository;
 import com.example.quadalearn.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -52,10 +52,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return userRepository.findAll();
     }
 
+    // Sửa lại chỗ này
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user với email: " + email));
-        return (UserDetails) user; // user phải implement UserDetails
+
+        return UserPrincipal.build(user); // wrap lại thành UserPrincipal
     }
 }
