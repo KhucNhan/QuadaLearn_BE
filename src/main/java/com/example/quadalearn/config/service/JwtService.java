@@ -1,15 +1,12 @@
 package com.example.quadalearn.config.service;
 
-import com.example.quadalearn.model.UserPrincipal;
 
-import lombok.Getter;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-
-
+import com.example.quadalearn.model.UserPrinciple;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
@@ -21,10 +18,10 @@ public class JwtService {
     private static final long EXPIRE_TIME = 86400000000L;
 
     public String generateTokenLogin(Authentication authentication) {
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        UserPrinciple userPrincipal = (UserPrinciple) authentication.getPrincipal();
 
         return Jwts.builder()
-                .setSubject((userPrincipal.getEmail()))
+                .setSubject((userPrincipal.getUsername()))
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date((new Date()).getTime() + EXPIRE_TIME * 1000))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
@@ -55,7 +52,7 @@ public class JwtService {
         return false;
     }
 
-    public String getEmailFromJwtToken(String token) {
+    public String getUsernameFromJwtToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(SECRET_KEY)
                 .build()

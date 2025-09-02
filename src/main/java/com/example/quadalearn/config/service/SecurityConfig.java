@@ -1,14 +1,15 @@
-package com.example.quadalearn.config;
+package com.example.quadalearn.config.service;
 
 import com.example.quadalearn.rest.CustomAccessDeniedHandler;
 import com.example.quadalearn.rest.JwtAuthenticationTokenFilter;
 import com.example.quadalearn.rest.RestAuthenticationEntryPoint;
-import com.example.quadalearn.service.impl.UserServiceImpl;
+import com.example.quadalearn.service.impl.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,11 +28,11 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final UserServiceImpl userService;
+    private final UserService userService;
     private final JwtAuthenticationTokenFilter jwtAuthenticationFilter;
     private final PasswordEncoder passwordEncoder;
 
-    public SecurityConfig(UserServiceImpl userService,
+    public SecurityConfig(UserService userService,
                           JwtAuthenticationTokenFilter jwtAuthenticationFilter,
                           PasswordEncoder passwordEncoder) {
         this.userService = userService;
@@ -42,27 +43,49 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Tắt CSRF vì dùng JWT
                 .csrf(csrf -> csrf.disable())
-                // CORS config
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // Xử lý exception (401, 403)
+                .cors(Customizer.withDefaults()) // ✅ dùng Customizer thay vì .cors().and()
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(restAuthenticationEntryPoint())
                         .accessDeniedHandler(accessDeniedHandler())
                 )
-                // Stateless session (không dùng session để lưu auth)
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Phân quyền
+                .sessionManagement(sess -> sess
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
+                        // Cho phép login và tạo user
                         .requestMatchers("/rest/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/rest/users").permitAll()
+                        // Cho phép tất cả các endpoint survey mà không cần JWT
+                        .requestMatchers("/api/survey/**").permitAll()
+                        // Các endpoint khác bắt buộc phải authenticated
+                        // GET /courses và /courses/{id} → USER & ADMIN được truy cập
+                        .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN")
+
+                        // POST, PUT, DELETE → chỉ ADMIN
+                        .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")
+
+
+                        // LESSON CONTROLLER
+                        .requestMatchers(HttpMethod.GET, "/lesson", "/lesson/**").hasAnyRole("USER", "ADMIN") // Xem bài học
+                        .requestMatchers(HttpMethod.POST, "/lesson").hasRole("ADMIN") // Tạo mới
+                        .requestMatchers(HttpMethod.PUT, "/lesson/**").hasRole("ADMIN") // Cập nhật
+                        .requestMatchers(HttpMethod.DELETE, "/lesson/**").hasRole("ADMIN") // Xóa
+
+
+                        // VOCABULARY CONTROLLER
+                        .requestMatchers(HttpMethod.GET, "/vocabulary", "/vocabulary/**").hasAnyRole("USER", "ADMIN") // USER & ADMIN
+                        .requestMatchers(HttpMethod.POST, "/vocabulary").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/vocabulary/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/vocabulary/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
-                // Cấu hình AuthenticationProvider
                 .authenticationProvider(daoAuthenticationProvider())
-                // Thêm JWT filter trước UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
     }
@@ -70,7 +93,6 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        // UserService phải implements UserDetailsService
         authProvider.setUserDetailsService(userService);
         authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
@@ -94,8 +116,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Cho phép frontend React call API
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // frontend React
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
