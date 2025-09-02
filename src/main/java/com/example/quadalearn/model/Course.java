@@ -18,4 +18,5 @@ public class Course {
     private String name;
     private String level;
     private String description;
+
 }
