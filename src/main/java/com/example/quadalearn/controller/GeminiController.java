@@ -1,11 +1,14 @@
 package com.example.quadalearn.controller;
 
 import com.example.quadalearn.service.GeminiService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
-@RequestMapping("/api/gemini")
-public class GeminiController {
+@RequestMapping("/api/ai")
+public class GeminiController  {
 
     private final GeminiService geminiService;
 
@@ -13,8 +16,19 @@ public class GeminiController {
         this.geminiService = geminiService;
     }
 
-    @GetMapping("/ask")
-    public String askGemini(@RequestParam String prompt) {
-        return geminiService.generateText(prompt);
+    @PostMapping("/ask")
+    public ResponseEntity<?> askAI(@RequestBody Map<String, String> input) {
+        String prompt = input.get("prompt");
+
+        try {
+            String response = geminiService.askAI(prompt);
+            return ResponseEntity.ok(Map.of("response", response));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Lỗi khi gọi AI",
+                    "message", e.getMessage()
+            ));
+        }
     }
 }
