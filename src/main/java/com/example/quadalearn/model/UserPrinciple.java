@@ -1,6 +1,5 @@
 package com.example.quadalearn.model;
 
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,32 +7,39 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-@Getter
-public class UserPrincipal implements UserDetails {
+
+public class UserPrinciple implements UserDetails {
     private static final long serialVersionUID = 1L;
-
-    private final String email;
+    private final String username;
     private final String password;
-    private final Collection<? extends GrantedAuthority> roles;
+    private Collection<? extends GrantedAuthority> roles;
 
-    public UserPrincipal(String email, String password,
+    public UserPrinciple(String username, String password,
                          Collection<? extends GrantedAuthority> roles) {
-        this.email = email;
+        this.username = username;
         this.password = password;
         this.roles = roles;
     }
 
-    public static UserPrincipal build(User user) {
+    public static UserPrinciple build(User user) {
         List<GrantedAuthority> authorities = new ArrayList<>();
         for (Role role : user.getRoles()) {
             authorities.add(new SimpleGrantedAuthority(role.getName()));
         }
 
-        return new UserPrincipal(
-                user.getEmail(),
+        return new UserPrinciple(user.getUsername(),
                 user.getPassword(),
-                authorities
-        );
+                authorities);
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
     }
 
     @Override
@@ -42,24 +48,13 @@ public class UserPrincipal implements UserDetails {
     }
 
     @Override
-    public String getPassword() {
-        return password;
-    }
-
-    // Dùng email làm username
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
     public boolean isAccountNonExpired() {
-        return true; // nếu muốn quản lý thì thêm field vào User
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // tương tự
+        return true;
     }
 
     @Override
