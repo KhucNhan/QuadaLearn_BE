@@ -57,8 +57,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/rest/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/rest/users").permitAll()
+                        .requestMatchers("/api/ai/**").permitAll() // 👉 cho phép gọi API AI không cần JWT
                         .anyRequest().authenticated()
                 )
+
                 // Cấu hình AuthenticationProvider
                 .authenticationProvider(daoAuthenticationProvider())
                 // Thêm JWT filter trước UsernamePasswordAuthenticationFilter

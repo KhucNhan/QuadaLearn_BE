@@ -3,6 +3,7 @@ package com.example.quadalearn.controller;
 import com.example.quadalearn.service.GeminiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 
