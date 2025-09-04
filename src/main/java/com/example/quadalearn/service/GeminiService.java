@@ -1,57 +1,75 @@
 package com.example.quadalearn.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.Map;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class GeminiService {
 
     @Value("${gemini.api.key}")
-    private String apiKey;
+    private String geminiApiKey;
 
-    private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=%s";
+    private static final String GEMINI_API_URL =
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=";
 
-    public String generateText(String prompt) {
-        RestTemplate restTemplate = new RestTemplate();
+    public String askAI(String prompt) throws Exception {
+        // --- JSON request
+        String jsonInput = "{"
+                + "\"contents\": [{\"parts\":[{\"text\":\"" + prompt.replace("\"", "\\\"") + "\"}]}]"
+                + "}";
+        System.out.println("👉 JSON body: " + jsonInput);
 
-        String url = String.format(GEMINI_URL, apiKey);
+        // --- Gọi API
+        URL url = new URL(GEMINI_API_URL);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+        conn.setRequestProperty("X-goog-api-key", geminiApiKey);
+        conn.setDoOutput(true);
 
-        // Request body (the format Gemini API expects)
-        Map<String, Object> requestBody = Map.of(
-                "contents", Collections.singletonList(
-                        Map.of("parts", Collections.singletonList(
-                                Map.of("text", prompt)
-                        ))
-                )
-        );
+        // In ra headers
+        System.out.println("👉 Headers:");
+        conn.getRequestProperties().forEach((k,v) -> System.out.println("   " + k + ": " + v));
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-
-        ResponseEntity<Map> response = restTemplate.exchange(
-                url, HttpMethod.POST, entity, Map.class
-        );
-
-        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-            try {
-                // Lấy text trong response
-                Map candidate = (Map) ((java.util.List) response.getBody().get("candidates")).get(0);
-                Map content = (Map) candidate.get("content");
-                java.util.List parts = (java.util.List) content.get("parts");
-                Map firstPart = (Map) parts.get(0);
-                return (String) firstPart.get("text");
-            } catch (Exception e) {
-                return "Không đọc được response từ Gemini: " + e.getMessage();
-            }
+        // Ghi body
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(jsonInput.getBytes(StandardCharsets.UTF_8));
         }
-        return "Lỗi gọi API Gemini: " + response.getStatusCode();
+
+        int statusCode = conn.getResponseCode();
+        System.out.println("👉 HTTP Status: " + statusCode);
+
+        InputStream is = (statusCode >= 400) ? conn.getErrorStream() : conn.getInputStream();
+        String response = "";
+        if (is != null) {
+            response = new String(is.readAllBytes(), StandardCharsets.UTF_8).trim();
+        }
+
+        System.out.println("👉 Raw response: " + response);
+
+        if (statusCode >= 400) {
+            throw new RuntimeException("Gemini API error: " + statusCode + " - " + response);
+        }
+
+        // --- Parse response
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(response);
+        if (root.has("candidates") && root.get("candidates").isArray() && root.get("candidates").size() > 0) {
+            String text = root.get("candidates").get(0)
+                    .path("content").path("parts").get(0).path("text").asText().trim();
+            System.out.println("👉 Parsed text: " + text);
+            return text;
+        }
+
+        return "AI không trả lời được";
     }
+
 }
