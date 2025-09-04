@@ -8,9 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserAnswerDTO {
-    private Long id;
-    private Long userTestId;
     private Long questionId;
     private String answer;
-    private Boolean correct;
 }

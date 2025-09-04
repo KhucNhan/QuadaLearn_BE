@@ -6,6 +6,8 @@ import com.example.quadalearn.model.auth.UserPrinciple;
 import com.example.quadalearn.repository.auth.IUserRepository;
 import com.example.quadalearn.service.auth.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements IUserService, UserDetailsService {
@@ -59,25 +63,21 @@ public class UserService implements IUserService, UserDetailsService {
     public void delete(Long id) {
         iUserRepository.deleteById(id);
     }
+
     /**
      * Spring Security mặc định vẫn gọi method này khi login,
      * nên ta sẽ ánh xạ username -> email để đồng bộ.
      */
-
+//
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = iUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-
-        System.out.println("🔍 Found user in DB: " + user.getEmail()
-                + " | password hash: " + user.getPassword());
-
         return UserPrinciple.build(user);
     }
 
 
-
-    private UserDTO toDTO(User user) {
+    public UserDTO toDTO(User user) {
         return new UserDTO(user.getId(), user.getEmail(), user.getRoles());
     }
 }

@@ -27,8 +27,8 @@ public class UserRestController {
     @Autowired
     private UserService userService;
 
-   @Autowired
-   private RoleService roleService;
+    @Autowired
+    private RoleService roleService;
 
     /* ---------------- GET ALL USER ------------------------ */
     @RequestMapping(value = "/users", method = RequestMethod.GET)

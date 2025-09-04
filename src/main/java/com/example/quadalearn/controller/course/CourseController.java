@@ -1,7 +1,9 @@
 package com.example.quadalearn.controller.course;
 
 import com.example.quadalearn.model.learning.Course;
+import com.example.quadalearn.repository.learning.CourseRepository;
 import com.example.quadalearn.service.impl.learning.CourseServiceImpl;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,9 @@ import java.util.Optional;
 public class CourseController {
     @Autowired
     private CourseServiceImpl courseService;
+
+    @Autowired
+    private CourseRepository courseRepository;
 
     // GET all
     @GetMapping("")
@@ -73,4 +78,14 @@ public class CourseController {
         return ResponseEntity.ok(courses); // 200 OK với danh sách course
     }
 
+
+    @GetMapping("/top6")
+    public ResponseEntity<List<Course>> getTop6Courses() {
+        List<Course> courses = courseRepository.findTop6Courses();
+        if (courses.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(courses);
+
+    }
 }

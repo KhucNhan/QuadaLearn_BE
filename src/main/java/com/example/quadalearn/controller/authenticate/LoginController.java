@@ -13,10 +13,12 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("")
@@ -26,55 +28,49 @@ public class LoginController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
-
     @Autowired
     private JwtService jwtService;
-
     @Autowired
     private IUserService userService;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         try {
-            log.info("👉 Login attempt: email={}, rawPassword={}", user.getEmail(), user.getPassword());
+            log.info("👉 Login attempt: email={}", user.getEmail());
 
-            // Kiểm tra DB trước khi authenticate
+            // Lấy thông tin user từ DB
             User userInfo = userService.findByEmail(user.getEmail());
-            if (userInfo != null) {
-                boolean match = passwordEncoder.matches(user.getPassword(), userInfo.getPassword());
-                log.info("🔑 Password match check: raw={}, encoded={}, result={}",
-                        user.getPassword(), userInfo.getPassword(), match);
-            } else {
-                log.warn("❌ User not found in DB: {}", user.getEmail());
+            if (userInfo == null) {
+                log.warn("❌ User not found: {}", user.getEmail());
+                throw new UsernameNotFoundException("User not found");
             }
 
-            // Gọi authenticate của Spring Security
-            Authentication authentication = authenticationManager.authenticate(
+            // Kiểm tra password
+            if (!passwordEncoder.matches(user.getPassword(), userInfo.getPassword())) {
+                log.warn("❌ Bad credentials for email={}", user.getEmail());
+                throw new BadCredentialsException("Bad credentials");
+            }
+
+            // Authenticate
+            Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
             );
+            SecurityContextHolder.getContext().setAuthentication(auth);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            String jwt = jwtService.generateTokenLogin(authentication);
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
+            // Tạo JWT
+            String jwt = jwtService.generateTokenLogin(auth);
             log.info("✅ Login SUCCESS: email={}", user.getEmail());
 
             return ResponseEntity.ok(new JwtResponse(
                     userInfo.getId(),
                     jwt,
                     userInfo.getName(),
-                    userDetails.getAuthorities()
+                    auth.getAuthorities()
             ));
-        } catch (UsernameNotFoundException e) {
-            log.error("❌ Login FAILED - user not found: {}", user.getEmail(), e);
-            throw e;
-        } catch (BadCredentialsException e) {
-            log.error("❌ Login FAILED - bad credentials: email={}, rawPassword={}",
-                    user.getEmail(), user.getPassword(), e);
+        } catch (UsernameNotFoundException | BadCredentialsException e) {
+            log.error("❌ Login FAILED: email={}", user.getEmail(), e);
             throw e;
         }
     }

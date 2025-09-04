@@ -56,11 +56,18 @@ public class SecurityConfig {
                         // Cho phép login và tạo user
                         .requestMatchers("/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/rest/users").permitAll()
+                        .requestMatchers("/api/ai/**").permitAll() // 👉 cho phép gọi API AI không cần JWT
+                        .requestMatchers("/tests/**").permitAll()
+
+
+                        // Cấu hình AuthenticationProvider
                         // Cho phép tất cả các endpoint survey mà không cần JWT
                         .requestMatchers("/api/survey/**").permitAll()
                         // Các endpoint khác bắt buộc phải authenticated
                         // GET /courses và /courses/{id} → USER & ADMIN được truy cập
-                        .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll() // cụ thể → public
+                        .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN") // chung → cần role
+
 
                         // POST, PUT, DELETE → chỉ ADMIN
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")

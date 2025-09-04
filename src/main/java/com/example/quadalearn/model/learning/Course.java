@@ -16,6 +16,7 @@ public class Course {
     private Long id;
 
     private String name;
+    private String image;
     private String level;
     private String description;
 
