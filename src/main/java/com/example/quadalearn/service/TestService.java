@@ -1,6 +1,7 @@
 // src/main/java/com/example/quadalearn/service/TestService.java
 package com.example.quadalearn.service;
 
+import com.example.quadalearn.dto.TestSubmissionRequest;
 import com.example.quadalearn.model.Test;
 import com.example.quadalearn.model.User;
 
@@ -16,4 +17,6 @@ public interface TestService {
     List<Test> findAll();
     List<Test> findByCreator(User creator);
     List<Test> findByType(String type);
+
+    String submitTest(User user, Long testId, TestSubmissionRequest request);
 }

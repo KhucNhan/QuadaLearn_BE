@@ -32,8 +32,8 @@ public class UserRestController {
     @Autowired
     private UserService userService;
 
-   @Autowired
-   private RoleService roleService;
+    @Autowired
+    private RoleService roleService;
 
     /* ---------------- GET ALL USER ------------------------ */
     @RequestMapping(value = "/users", method = RequestMethod.GET)
@@ -71,13 +71,13 @@ public class UserRestController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> login(@RequestBody User user) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+                new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtService.generateTokenLogin(authentication);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User userInfo = userService.findByUsername(user.getUsername());
+        User userInfo = userService.findByEmail(user.getEmail());
         return ResponseEntity.ok(new JwtResponse(userInfo.getId(), jwt,
-                userInfo.getUsername(), userInfo.getUsername(), userDetails.getAuthorities()));
+                userInfo.getEmail(), userInfo.getEmail(), userDetails.getAuthorities()));
     }
 
     @GetMapping("/roles")

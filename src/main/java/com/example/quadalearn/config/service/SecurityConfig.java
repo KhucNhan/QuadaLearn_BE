@@ -57,10 +57,10 @@ public class SecurityConfig {
                         .requestMatchers("/rest/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/rest/users").permitAll()
                         .requestMatchers("/api/ai/**").permitAll() // 👉 cho phép gọi API AI không cần JWT
-                        .anyRequest().authenticated()
+                        .requestMatchers("/tests/**").permitAll()
 
 
-                // Cấu hình AuthenticationProvider
+                        // Cấu hình AuthenticationProvider
                         // Cho phép tất cả các endpoint survey mà không cần JWT
                         .requestMatchers("/api/survey/**").permitAll()
                         // Các endpoint khác bắt buộc phải authenticated

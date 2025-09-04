@@ -38,12 +38,12 @@ public class UserService implements UserDetailsService {
         return user.map(this::toDTO).orElse(null);
     }
 
-    public User findByUsername(String username) {
-        return iUserRepository.findByUsername(username).orElse(null);
+    public User findByEmail(String email) {
+        return iUserRepository.findByEmail(email).orElse(null);
     }
 
     public boolean add(User user) {
-        if (iUserRepository.findByUsername(user.getUsername()).isPresent()) {
+        if (iUserRepository.findByEmail(user.getEmail()).isPresent()) {
             return false;
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -57,13 +57,13 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = iUserRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = iUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
         return UserPrinciple.build(user);
     }
 
     public UserDTO toDTO(User user) {
-        return new UserDTO(user.getId(), user.getUsername(), user.getRoles());
+        return new UserDTO(user.getId(), user.getEmail(), user.getRoles());
     }
 }
