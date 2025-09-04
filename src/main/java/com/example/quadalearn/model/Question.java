@@ -23,4 +23,8 @@ public class Question {
     private String type;
     private String answerKey;
     private String knowledgeTag;
+    private String a;
+    private String b;
+    private String c;
+    private String d;
 }

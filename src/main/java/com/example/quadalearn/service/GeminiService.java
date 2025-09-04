@@ -10,6 +10,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class GeminiService {
@@ -72,4 +74,27 @@ public class GeminiService {
         return "AI không trả lời được";
     }
 
+    public String analyzeTest(String aim, List<Map<String, String>> answers, double score) throws Exception {
+        StringBuilder answersText = new StringBuilder();
+        for (Map<String, String> ans : answers) {
+            answersText.append("Q: ").append(ans.get("question")).append("\n")
+                    .append("Correct: ").append(ans.get("correct_answer")).append("\n")
+                    .append("User: ").append(ans.get("user_answer")).append("\n")
+                    .append("Tag: ").append(ans.get("knowledgeTag")).append("\n\n");
+        }
+
+        String prompt =
+                "Bạn là 1 giáo viên tiếng Anh. Hãy phân tích bài làm của học sinh dựa trên CEFR.\n\n" +
+                        "Mục tiêu: " + aim + "\n" +
+                        "Điểm: " + String.format("%.2f", score) + "\n" +
+                        "Các câu trả lời:\n" + answersText +
+                        "Công việc của bạn:\n" +
+                        "1. Tổng hợp % đúng và ước tính CEFR. \n" +
+                        "2. Xác định các chủ đề ngữ pháp mà người dùng mạnh và yếu. \n" +
+                        "3. Cung cấp phản hồi được cá nhân hóa. \n" +
+                        "4. Đề xuất lộ trình để đạt mục tiêu mục tiêu (" + aim + ").";
+
+
+        return askAI(prompt); // gọi API Gemini như bạn viết trước đó
+    }
 }

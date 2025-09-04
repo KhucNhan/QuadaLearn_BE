@@ -1,21 +1,25 @@
 package com.example.quadalearn.controller;
 
+import com.example.quadalearn.dto.TestSubmissionRequest;
 import com.example.quadalearn.model.Test;
 import com.example.quadalearn.model.User;
 import com.example.quadalearn.service.TestService;
+import com.example.quadalearn.service.impl.TestServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/tests")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class TestController {
 
-    private final TestService testService;
+    private final TestServiceImpl testService;
 
     // Lấy tất cả bài kiểm tra
     @GetMapping("")
@@ -67,5 +71,24 @@ public class TestController {
     @PostMapping("/creator")
     public ResponseEntity<List<Test>> getTestsByCreator(@RequestBody User creator) {
         return ResponseEntity.ok(testService.findByCreator(creator));
+    }
+
+    @PostMapping("/{testId}/submit")
+    public ResponseEntity<?> submitTest(
+            @PathVariable Long testId,
+            @RequestBody TestSubmissionRequest request) {
+        try {
+            // user = null vì không đăng nhập
+            String analysis = testService.submitTest(null, testId, request);
+            return ResponseEntity.ok(Map.of(
+                    "testId", testId,
+                    "scoreAnalysis", analysis
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 }
