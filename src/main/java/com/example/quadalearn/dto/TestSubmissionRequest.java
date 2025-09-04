@@ -1,5 +1,6 @@
 package com.example.quadalearn.dto;
 
+import com.example.quadalearn.dto.user.UserAnswerDTO;
 import lombok.Data;
 
 import java.util.List;

@@ -1,15 +1,17 @@
 package com.example.quadalearn.controller;
 
-import com.example.quadalearn.service.GeminiService;
+import com.example.quadalearn.service.impl.GeminiService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ai")
-public class GeminiController  {
+public class GeminiController {
 
     private final GeminiService geminiService;
 

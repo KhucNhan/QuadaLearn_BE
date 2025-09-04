@@ -3,7 +3,7 @@ package com.example.quadalearn.config.service;
 import com.example.quadalearn.rest.CustomAccessDeniedHandler;
 import com.example.quadalearn.rest.JwtAuthenticationTokenFilter;
 import com.example.quadalearn.rest.RestAuthenticationEntryPoint;
-import com.example.quadalearn.service.impl.UserService;
+import com.example.quadalearn.service.impl.auth.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -54,7 +54,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         // Cho phép login và tạo user
-                        .requestMatchers("/rest/login").permitAll()
+                        .requestMatchers("/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/rest/users").permitAll()
                         .requestMatchers("/api/ai/**").permitAll() // 👉 cho phép gọi API AI không cần JWT
                         .requestMatchers("/tests/**").permitAll()
@@ -102,6 +102,7 @@ public class SecurityConfig {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userService);
         authProvider.setPasswordEncoder(passwordEncoder);
+        authProvider.setHideUserNotFoundExceptions(false);
         return authProvider;
     }
 
