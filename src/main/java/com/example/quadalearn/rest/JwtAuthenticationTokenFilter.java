@@ -1,7 +1,7 @@
 package com.example.quadalearn.rest;
 
 import com.example.quadalearn.config.service.JwtService;
-import com.example.quadalearn.service.UserService;
+import com.example.quadalearn.service.impl.auth.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,7 +35,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
             if (jwt != null && jwtService.validateJwtToken(jwt)) {
                 // Lấy email từ JWT
-                String email = jwtService.getEmailFromJwtToken(jwt);
+                String email = jwtService.getUsernameFromJwtToken(jwt);
 
                 // Load user từ email
                 UserDetails userDetails = userService.loadUserByUsername(email);

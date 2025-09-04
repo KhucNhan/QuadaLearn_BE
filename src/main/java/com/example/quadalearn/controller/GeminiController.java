@@ -1,6 +1,6 @@
 package com.example.quadalearn.controller;
 
-import com.example.quadalearn.service.GeminiService;
+import com.example.quadalearn.service.impl.GeminiService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

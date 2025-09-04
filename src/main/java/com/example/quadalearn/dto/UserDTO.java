@@ -1,17 +1,47 @@
 package com.example.quadalearn.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.example.quadalearn.model.auth.Role;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+import java.util.Set;
+
 public class UserDTO {
     private Long id;
     private String email;
-    private String name;
-    private String currentLevel;
-    private String goal;
-    private String roleName; // thay vì object Role, chỉ cần name
+    private Set<Role> roles;
+
+
+    public UserDTO() {
+    }
+
+
+    public UserDTO(Long id, String email, Set<Role> roles) {
+        this.id = id;
+        this.email = email;
+        this.roles = roles;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
 }
+
