@@ -54,10 +54,10 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         // Cho phép login và tạo user
-                        .requestMatchers("/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/rest/users").permitAll()
                         .requestMatchers("/api/ai/**").permitAll() // 👉 cho phép gọi API AI không cần JWT
                         .requestMatchers("/tests/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
 
 
                         // Cấu hình AuthenticationProvider
