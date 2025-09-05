@@ -21,10 +21,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("")
-public class LoginController {
+@RequestMapping("/api/auth")
+public class LoginRestController {
 
-    private static final Logger log = LoggerFactory.getLogger(LoginController.class);
+    private static final Logger log = LoggerFactory.getLogger(LoginRestController.class);
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -48,6 +48,8 @@ public class LoginController {
             }
 
             // Kiểm tra password
+            log.info(user.getPassword());
+            log.info(userInfo.getPassword());
             if (!passwordEncoder.matches(user.getPassword(), userInfo.getPassword())) {
                 log.warn("❌ Bad credentials for email={}", user.getEmail());
                 throw new BadCredentialsException("Bad credentials");

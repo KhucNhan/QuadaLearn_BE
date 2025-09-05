@@ -49,7 +49,7 @@ public class UserRestController {
     /* ---------------- CREATE NEW USER ------------------------ */
     @RequestMapping(value = "/users", method = RequestMethod.POST)
     public ResponseEntity<String> createUser(@RequestBody User user) {
-        if (userService.add(user)) {
+        if (userService.add(user) != null) {
             return new ResponseEntity<>("Created!", HttpStatus.CREATED);
         } else {
             return new ResponseEntity<>("User Existed!", HttpStatus.BAD_REQUEST);

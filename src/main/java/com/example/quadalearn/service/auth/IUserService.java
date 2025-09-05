@@ -13,7 +13,7 @@ public interface IUserService {
 
     User findByEmail(String email);
 
-    boolean add(User user);
+    User add(User user);
 
     void delete(Long id);
 }

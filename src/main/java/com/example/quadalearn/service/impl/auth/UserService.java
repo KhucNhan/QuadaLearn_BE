@@ -50,13 +50,12 @@ public class UserService implements IUserService, UserDetailsService {
     }
 
     @Override
-    public boolean add(User user) {
+    public User add(User user) {
         if (iUserRepository.findByEmail(user.getEmail()).isPresent()) {
-            return false;
+            return null;
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        iUserRepository.save(user);
-        return true;
+        return iUserRepository.save(user);
     }
 
     @Override
