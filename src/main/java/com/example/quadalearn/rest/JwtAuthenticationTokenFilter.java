@@ -1,7 +1,7 @@
 package com.example.quadalearn.rest;
 
 import com.example.quadalearn.config.service.JwtService;
-import com.example.quadalearn.service.impl.UserService;
+import com.example.quadalearn.service.impl.auth.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

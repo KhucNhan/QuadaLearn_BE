@@ -1,21 +1,16 @@
 package com.example.quadalearn.controller;
 
 
-import com.example.quadalearn.config.service.JwtResponse;
 import com.example.quadalearn.config.service.JwtService;
 import com.example.quadalearn.dto.UserDTO;
-import com.example.quadalearn.model.Role;
-import com.example.quadalearn.model.User;
-import com.example.quadalearn.service.impl.RoleService;
-import com.example.quadalearn.service.impl.UserService;
+import com.example.quadalearn.model.auth.Role;
+import com.example.quadalearn.model.auth.User;
+import com.example.quadalearn.service.impl.auth.RoleService;
+import com.example.quadalearn.service.impl.auth.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,8 +27,8 @@ public class UserRestController {
     @Autowired
     private UserService userService;
 
-   @Autowired
-   private RoleService roleService;
+    @Autowired
+    private RoleService roleService;
 
     /* ---------------- GET ALL USER ------------------------ */
     @RequestMapping(value = "/users", method = RequestMethod.GET)
@@ -54,7 +49,7 @@ public class UserRestController {
     /* ---------------- CREATE NEW USER ------------------------ */
     @RequestMapping(value = "/users", method = RequestMethod.POST)
     public ResponseEntity<String> createUser(@RequestBody User user) {
-        if (userService.add(user)) {
+        if (userService.add(user) != null) {
             return new ResponseEntity<>("Created!", HttpStatus.CREATED);
         } else {
             return new ResponseEntity<>("User Existed!", HttpStatus.BAD_REQUEST);
@@ -68,17 +63,17 @@ public class UserRestController {
         return new ResponseEntity<>("Deleted!", HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public ResponseEntity<?> login(@RequestBody User user) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtService.generateTokenLogin(authentication);
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User userInfo = userService.findByUsername(user.getUsername());
-        return ResponseEntity.ok(new JwtResponse(userInfo.getId(), jwt,
-                userInfo.getUsername(), userInfo.getUsername(), userDetails.getAuthorities()));
-    }
+//    @RequestMapping(value = "/login", method = RequestMethod.POST)
+//    public ResponseEntity<?> login(@RequestBody User user) {
+//        Authentication authentication = authenticationManager.authenticate(
+//                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+//        SecurityContextHolder.getContext().setAuthentication(authentication);
+//        String jwt = jwtService.generateTokenLogin(authentication);
+//        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+//        User userInfo = userService.findByUsername(user.getUsername());
+//        return ResponseEntity.ok(new JwtResponse(userInfo.getId(), jwt,
+//                userInfo.getUsername(), userInfo.getUsername(), userDetails.getAuthorities()));
+//    }
 
     @GetMapping("/roles")
     public ResponseEntity<List<Role>> getAllRoles() {

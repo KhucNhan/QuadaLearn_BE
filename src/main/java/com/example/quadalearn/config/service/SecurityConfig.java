@@ -3,7 +3,7 @@ package com.example.quadalearn.config.service;
 import com.example.quadalearn.rest.CustomAccessDeniedHandler;
 import com.example.quadalearn.rest.JwtAuthenticationTokenFilter;
 import com.example.quadalearn.rest.RestAuthenticationEntryPoint;
-import com.example.quadalearn.service.impl.UserService;
+import com.example.quadalearn.service.impl.auth.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -53,10 +53,17 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+
                         // Public
                         .requestMatchers("/rest/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/rest/users").permitAll()
                         .requestMatchers("/api/ai/**").permitAll()
+
+                        .requestMatchers("/tests/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+
+
+
                         .requestMatchers("/api/survey/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll()
 
@@ -92,6 +99,7 @@ public class SecurityConfig {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userService);
         authProvider.setPasswordEncoder(passwordEncoder);
+        authProvider.setHideUserNotFoundExceptions(false);
         return authProvider;
     }
 
