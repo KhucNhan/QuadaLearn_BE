@@ -62,10 +62,10 @@ public class SecurityConfig {
                         .requestMatchers("/tests/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
 
-
-
                         .requestMatchers("/api/survey/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/courses/{id}/lessons").permitAll()
+
 
                         // Protected USER & ADMIN
                         .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN")

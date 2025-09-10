@@ -14,4 +14,7 @@ public interface ICourseService {
     Optional<Course> findById(Long id);
     List<Course> findAll();
     List<Course> findByLevel(String level);
+
+
+    Optional<Course> findCourseWithLessonsById(Long courseId);
 }

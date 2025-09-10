@@ -88,4 +88,19 @@ public class CourseController {
         return ResponseEntity.ok(courses);
 
     }
+
+
+    @GetMapping("/{id}/lessons")
+    public ResponseEntity<?> getCourseWithLessons(@PathVariable Long id) {
+        Optional<Course> courseOpt = courseService.findCourseWithLessonsById(id);
+
+        if (courseOpt.isPresent()) {
+            Course course = courseOpt.get();
+
+            // Trả về course kèm danh sách lesson
+            return ResponseEntity.ok(course);
+        } else {
+            return ResponseEntity.status(404).body("Không tìm thấy course với ID: " + id);
+        }
+    }
 }
