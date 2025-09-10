@@ -65,6 +65,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/survey/**").permitAll()
                         // Các endpoint khác bắt buộc phải authenticated
                         // GET /courses và /courses/{id} → USER & ADMIN được truy cập
+                        .requestMatchers(HttpMethod.GET, "/courses/level").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/questions/test/1").permitAll()
                         .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll() // cụ thể → public
                         .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN") // chung → cần role
 
