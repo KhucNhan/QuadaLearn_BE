@@ -63,8 +63,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
 
                         .requestMatchers("/api/survey/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll()
                         .requestMatchers(HttpMethod.GET, "/courses/{id}/lessons").permitAll()
+                        // GET /courses và /courses/{id} → USER & ADMIN được truy cập
+                        .requestMatchers(HttpMethod.GET, "/courses/level").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/questions/test/1").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll() // cụ thể → public
+                        .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN") // chung → cần role
 
 
                         // Protected USER & ADMIN

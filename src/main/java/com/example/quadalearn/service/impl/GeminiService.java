@@ -84,7 +84,7 @@ public class GeminiService {
         }
 
         String prompt =
-                "Bạn là 1 giáo viên tiếng Anh. Hãy phân tích bài làm của học sinh dựa trên CEFR.\n\n" +
+                "Bạn là 1 giáo viên tiếng Anh. Hãy phân tích bài làm gồm 50 câu của học sinh dựa trên CEFR.\n\n" +
                         "Mục tiêu: " + aim + "\n" +
                         "Điểm: " + String.format("%.2f", score) + "\n" +
                         "Các câu trả lời:\n" + answersText +
