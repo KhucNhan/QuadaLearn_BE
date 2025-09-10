@@ -48,4 +48,9 @@ public class CourseServiceImpl implements ICourseService {
     public List<Course> findByLevel(String level) {
         return courseRepository.findByLevel(level);
     }
+
+    @Override
+    public Optional<Course> findCourseWithLessonsById(Long courseId) {
+        return courseRepository.findCourseWithLessonsById(courseId);
+    }
 }
