@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Set;
+
 import com.example.quadalearn.config.service.JwtResponse;
+
 @RestController
 @RequestMapping("/api/auth")
 public class RegisterRestController {
