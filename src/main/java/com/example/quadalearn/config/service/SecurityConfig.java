@@ -53,43 +53,44 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Cho phép login và tạo user
+
+                        // Public
+                        .requestMatchers("/rest/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/rest/users").permitAll()
-                        .requestMatchers("/api/ai/**").permitAll() // 👉 cho phép gọi API AI không cần JWT
+                        .requestMatchers("/api/ai/**").permitAll()
+
                         .requestMatchers("/tests/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
 
-
-                        // Cấu hình AuthenticationProvider
-                        // Cho phép tất cả các endpoint survey mà không cần JWT
                         .requestMatchers("/api/survey/**").permitAll()
-                        // Các endpoint khác bắt buộc phải authenticated
+                        .requestMatchers(HttpMethod.GET, "/courses/{id}/lessons").permitAll()
                         // GET /courses và /courses/{id} → USER & ADMIN được truy cập
+                        .requestMatchers(HttpMethod.GET, "/courses/level").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/questions/test/1").permitAll()
                         .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll() // cụ thể → public
                         .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN") // chung → cần role
 
 
-                        // POST, PUT, DELETE → chỉ ADMIN
+                        // Protected USER & ADMIN
+                        .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/lesson", "/lesson/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/vocabulary", "/vocabulary/**").hasAnyRole("USER", "ADMIN")
+
+                        // Protected ADMIN only
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")
-
-
-                        // LESSON CONTROLLER
-                        .requestMatchers(HttpMethod.GET, "/lesson", "/lesson/**").hasAnyRole("USER", "ADMIN") // Xem bài học
-                        .requestMatchers(HttpMethod.POST, "/lesson").hasRole("ADMIN") // Tạo mới
-                        .requestMatchers(HttpMethod.PUT, "/lesson/**").hasRole("ADMIN") // Cập nhật
-                        .requestMatchers(HttpMethod.DELETE, "/lesson/**").hasRole("ADMIN") // Xóa
-
-
-                        // VOCABULARY CONTROLLER
-                        .requestMatchers(HttpMethod.GET, "/vocabulary", "/vocabulary/**").hasAnyRole("USER", "ADMIN") // USER & ADMIN
+                        .requestMatchers(HttpMethod.POST, "/lesson").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/lesson/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/lesson/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/vocabulary").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/vocabulary/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/vocabulary/**").hasRole("ADMIN")
 
+                        // Tất cả request còn lại cần authenticated
                         .anyRequest().authenticated()
                 )
+
                 .authenticationProvider(daoAuthenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

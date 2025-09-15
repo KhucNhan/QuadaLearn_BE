@@ -3,6 +3,8 @@ package com.example.quadalearn.model.learning;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "courses")
 @Getter
@@ -19,5 +21,8 @@ public class Course {
     private String image;
     private String level;
     private String description;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Lesson> lessons;
 
 }

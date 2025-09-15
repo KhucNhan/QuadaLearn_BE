@@ -1,11 +1,13 @@
 package com.example.quadalearn.controller.course.question;
 
+import com.example.quadalearn.dto.course.question.QuestionDTO;
 import com.example.quadalearn.model.testing.Question;
 import com.example.quadalearn.service.testing.IQuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -58,9 +60,33 @@ public class QuestionController {
 
     // GET questions by test ID
     @GetMapping("/test/{testId}")
-    public ResponseEntity<List<Question>> getQuestionsByTestId(@PathVariable Long testId) {
-        return ResponseEntity.ok(questionService.findByTestId(testId));
+    public ResponseEntity<List<QuestionDTO>> getQuestionsByTestId(@PathVariable Long testId) {
+        List<Question> questions = questionService.findByTestId(testId);
+
+        List<QuestionDTO> dtoList = questions.stream().map(q -> {
+            QuestionDTO dto = new QuestionDTO();
+            dto.setId(q.getId());
+            dto.setTestId(q.getTest().getId());
+            dto.setContent(q.getContent());
+            dto.setType(q.getType());
+            dto.setAnswerKey(q.getAnswerKey());
+            dto.setKnowledgeTag(q.getKnowledgeTag());
+
+            // ghép a,b,c,d thành list
+            List<String> options = new ArrayList<>();
+            if (q.getA() != null) options.add(q.getA());
+            if (q.getB() != null) options.add(q.getB());
+            if (q.getC() != null) options.add(q.getC());
+            if (q.getD() != null) options.add(q.getD());
+
+            dto.setOptions(options);
+
+            return dto;
+        }).toList();
+
+        return ResponseEntity.ok(dtoList);
     }
+
 
     // GET questions by knowledge tag
     @GetMapping("/tag")
