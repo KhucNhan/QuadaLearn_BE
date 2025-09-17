@@ -16,7 +16,11 @@ public class Vocabulary {
     private Long id;
 
     private String word;
+    private String transcription;
     private String meaning;
     private String exampleSentence;
     private String level;
+    private String topic;
+    private String imageUrl;
+
 }
