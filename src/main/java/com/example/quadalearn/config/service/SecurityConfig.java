@@ -44,7 +44,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults()) // ✅ dùng Customizer thay vì .cors().and()
+                .cors(Customizer.withDefaults())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(restAuthenticationEntryPoint())
                         .accessDeniedHandler(accessDeniedHandler())
@@ -53,47 +53,43 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-
-                        // Public
+                        // ==== Public API ====
                         .requestMatchers("/rest/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/rest/users").permitAll()
                         .requestMatchers("/api/ai/**").permitAll()
-
                         .requestMatchers("/tests/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-
                         .requestMatchers("/api/survey/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/courses/{id}/lessons").permitAll()
-                        // GET /courses và /courses/{id} → USER & ADMIN được truy cập
+
+                        // ==== Public GET Endpoint (phải để trước matcher tổng quát) ====
+                        .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll()
                         .requestMatchers(HttpMethod.GET, "/courses/level").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/courses/{id}/lessons").permitAll()
                         .requestMatchers(HttpMethod.GET, "/questions/test/1").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll() // cụ thể → public
-                        .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN") // chung → cần role
+                        .requestMatchers(HttpMethod.GET, "/vocabularies/**").permitAll()
 
-
-                        // Protected USER & ADMIN
+                        // ==== GET yêu cầu xác thực (user/admin) ====
                         .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/lesson", "/lesson/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/vocabulary", "/vocabulary/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/lesson/**").hasAnyRole("USER", "ADMIN")
 
-                        // Protected ADMIN only
+                        // ==== ADMIN quyền POST, PUT, DELETE ====
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.POST, "/lesson").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/lesson/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/lesson/**").hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.POST, "/vocabulary").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/vocabulary/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/vocabulary/**").hasRole("ADMIN")
 
-                        // Tất cả request còn lại cần authenticated
+                        // ==== Bắt buộc authenticated với các request khác ====
                         .anyRequest().authenticated()
                 )
-
                 .authenticationProvider(daoAuthenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
 
         return http.build();
     }
