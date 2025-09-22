@@ -1,6 +1,7 @@
 package com.example.quadalearn.config.service;
 
 
+import com.example.quadalearn.model.auth.User;
 import com.example.quadalearn.model.auth.UserPrinciple;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -60,4 +61,14 @@ public class JwtService {
                 .getBody()
                 .getSubject();
     }
+
+    public String generateToken(User user) {
+        return Jwts.builder()
+                .setSubject(user.getEmail())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date((new Date()).getTime() + EXPIRE_TIME * 1000))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 }

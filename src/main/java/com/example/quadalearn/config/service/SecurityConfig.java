@@ -23,6 +23,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 @EnableMethodSecurity
@@ -63,6 +64,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
 
                         .requestMatchers("/api/survey/**").permitAll()
+
+                        .requestMatchers("/oauth2/**").permitAll()
+                        .requestMatchers("/login/oauth2/**").permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/courses/{id}/lessons").permitAll()
                         // GET /courses và /courses/{id} → USER & ADMIN được truy cập
                         .requestMatchers(HttpMethod.GET, "/courses/level").permitAll()
@@ -87,9 +92,43 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/vocabulary/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/vocabulary/**").hasRole("ADMIN")
 
+
+
                         // Tất cả request còn lại cần authenticated
                         .anyRequest().authenticated()
                 )
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler((request, response, authentication) -> {
+                            var oauthUser = (org.springframework.security.oauth2.core.user.OAuth2User) authentication.getPrincipal();
+                            String email = oauthUser.getAttribute("email");
+                            String name = oauthUser.getAttribute("name");
+
+                            // Tìm user trong DB
+                            var user = userService.findByEmail(email);
+                            if (user == null) {
+                                user = new com.example.quadalearn.model.auth.User();
+                                user.setEmail(email);
+                                user.setName(name);
+                                user.setPassword("GOOGLE_LOGIN");
+                                user.setRoles(Set.of(new com.example.quadalearn.model.auth.Role(2L, "ROLE_USER")));
+                                user = userService.add(user);
+                            }
+
+                            // Sinh JWT
+                            String jwt = new JwtService().generateToken(user);
+
+                            // Redirect về frontend (Next.js)
+                            String redirectUrl = "http://localhost:3000/oauth2/callback?token=" + jwt
+                                    + "&name=" + java.net.URLEncoder.encode(user.getName(), java.nio.charset.StandardCharsets.UTF_8)
+                                    + "&email=" + java.net.URLEncoder.encode(user.getEmail(), java.nio.charset.StandardCharsets.UTF_8);
+
+                            response.sendRedirect(redirectUrl);
+                        })
+                        .failureHandler((request, response, exception) -> {
+                            response.sendRedirect("http://localhost:3000/authenticate/login?error=google");
+                        })
+                )
+
 
                 .authenticationProvider(daoAuthenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
