@@ -20,6 +20,7 @@ public class VocabularyController {
     // GET all
     @GetMapping("")
     public ResponseEntity<List<Vocabulary>> getAllVocabularies() {
+        System.out.println("Đã gọi tới API vocabularies");
         return ResponseEntity.ok(vocabularyService.findAll());
     }
 
