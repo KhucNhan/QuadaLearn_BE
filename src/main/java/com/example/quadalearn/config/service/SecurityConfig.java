@@ -23,6 +23,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 @EnableMethodSecurity
@@ -44,7 +45,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(Customizer.withDefaults())
+                .cors(Customizer.withDefaults()) // ✅ dùng Customizer thay vì .cors().and()
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(restAuthenticationEntryPoint())
                         .accessDeniedHandler(accessDeniedHandler())
@@ -53,43 +54,85 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // ==== Public API ====
+
+                        // Public
                         .requestMatchers("/rest/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/rest/users").permitAll()
                         .requestMatchers("/api/ai/**").permitAll()
+
                         .requestMatchers("/tests/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+
                         .requestMatchers("/api/survey/**").permitAll()
 
-                        // ==== Public GET Endpoint (phải để trước matcher tổng quát) ====
-                        .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/courses/level").permitAll()
+                        .requestMatchers("/oauth2/**").permitAll()
+                        .requestMatchers("/login/oauth2/**").permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/courses/{id}/lessons").permitAll()
+                        // GET /courses và /courses/{id} → USER & ADMIN được truy cập
+                        .requestMatchers(HttpMethod.GET, "/courses/level").permitAll()
                         .requestMatchers(HttpMethod.GET, "/questions/test/1").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/vocabularies/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll() // cụ thể → public
+                        .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN") // chung → cần role
 
-                        // ==== GET yêu cầu xác thực (user/admin) ====
+
+                        // Protected USER & ADMIN
                         .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/lesson/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/lesson", "/lesson/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/vocabulary", "/vocabulary/**").hasAnyRole("USER", "ADMIN")
 
-                        // ==== ADMIN quyền POST, PUT, DELETE ====
+                        // Protected ADMIN only
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")
-
                         .requestMatchers(HttpMethod.POST, "/lesson").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/lesson/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/lesson/**").hasRole("ADMIN")
-
                         .requestMatchers(HttpMethod.POST, "/vocabulary").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/vocabulary/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/vocabulary/**").hasRole("ADMIN")
 
-                        // ==== Bắt buộc authenticated với các request khác ====
+
+
+                        // Tất cả request còn lại cần authenticated
                         .anyRequest().authenticated()
                 )
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler((request, response, authentication) -> {
+                            var oauthUser = (org.springframework.security.oauth2.core.user.OAuth2User) authentication.getPrincipal();
+                            String email = oauthUser.getAttribute("email");
+                            String name = oauthUser.getAttribute("name");
+
+                            // Tìm user trong DB
+                            var user = userService.findByEmail(email);
+                            if (user == null) {
+                                user = new com.example.quadalearn.model.auth.User();
+                                user.setEmail(email);
+                                user.setName(name);
+                                user.setPassword("GOOGLE_LOGIN");
+                                user.setRoles(Set.of(new com.example.quadalearn.model.auth.Role(2L, "ROLE_USER")));
+                                user = userService.add(user);
+                            }
+
+                            // Sinh JWT
+                            String jwt = new JwtService().generateToken(user);
+
+                            // Redirect về frontend (Next.js)
+                            String redirectUrl = "http://localhost:3000/oauth2/callback?token=" + jwt
+                                    + "&name=" + java.net.URLEncoder.encode(user.getName(), java.nio.charset.StandardCharsets.UTF_8)
+                                    + "&email=" + java.net.URLEncoder.encode(user.getEmail(), java.nio.charset.StandardCharsets.UTF_8);
+
+                            response.sendRedirect(redirectUrl);
+                        })
+                        .failureHandler((request, response, exception) -> {
+                            response.sendRedirect("http://localhost:3000/authenticate/login?error=google");
+                        })
+                )
+
+
                 .authenticationProvider(daoAuthenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
     }
