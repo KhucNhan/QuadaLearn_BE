@@ -93,7 +93,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/vocabulary/**").hasRole("ADMIN")
 
 
-
                         // Tất cả request còn lại cần authenticated
                         .anyRequest().authenticated()
                 )
@@ -117,11 +116,13 @@ public class SecurityConfig {
                             // Sinh JWT
                             String jwt = new JwtService().generateToken(user);
 
+                            boolean needsCompletion = (user.getGoal() == null || user.getCurrentLevel() == null);
+
                             // Redirect về frontend (Next.js)
                             String redirectUrl = "http://localhost:3000/oauth2/callback?token=" + jwt
                                     + "&name=" + java.net.URLEncoder.encode(user.getName(), java.nio.charset.StandardCharsets.UTF_8)
-                                    + "&email=" + java.net.URLEncoder.encode(user.getEmail(), java.nio.charset.StandardCharsets.UTF_8);
-
+                                    + "&email=" + java.net.URLEncoder.encode(user.getEmail(), java.nio.charset.StandardCharsets.UTF_8)
+                                    + "&needsCompletion=" + needsCompletion;
                             response.sendRedirect(redirectUrl);
                         })
                         .failureHandler((request, response, exception) -> {

@@ -15,10 +15,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,18 +37,11 @@ public class LoginRestController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         try {
-            log.info("👉 Login attempt: email={}", user.getEmail());
-
-            // Lấy thông tin user từ DB
             User userInfo = userService.findByEmail(user.getEmail());
             if (userInfo == null) {
                 log.warn("❌ User not found: {}", user.getEmail());
                 throw new UsernameNotFoundException("User not found");
             }
-
-            // Kiểm tra password
-            log.info(user.getPassword());
-            log.info(userInfo.getPassword());
             if (!passwordEncoder.matches(user.getPassword(), userInfo.getPassword())) {
                 log.warn("❌ Bad credentials for email={}", user.getEmail());
                 throw new BadCredentialsException("Bad credentials");
@@ -63,17 +55,43 @@ public class LoginRestController {
 
             // Tạo JWT
             String jwt = jwtService.generateTokenLogin(auth);
-            log.info("✅ Login SUCCESS: email={}", user.getEmail());
+            boolean needsCompletion = (userInfo.getGoal() == null || userInfo.getCurrentLevel() == null);
+
 
             return ResponseEntity.ok(new JwtResponse(
                     userInfo.getId(),
                     jwt,
                     userInfo.getName(),
-                    auth.getAuthorities()
+                    auth.getAuthorities(),
+                    needsCompletion
             ));
+
         } catch (UsernameNotFoundException | BadCredentialsException e) {
             log.error("❌ Login FAILED: email={}", user.getEmail(), e);
             throw e;
         }
+    }
+
+    @PutMapping("/complete-profile")
+    public ResponseEntity<?> completeProfile(@RequestBody Map<String, String> payload, Authentication authentication) {
+        String email = authentication.getName();
+
+        User user = userService.findByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+
+        // Lấy dữ liệu từ body
+        String currentLevel = payload.get("currentLevel");
+        String goal = payload.get("goal");
+
+        // Update user
+        user.setCurrentLevel(currentLevel);
+        user.setGoal(goal);
+
+        userService.save(user);
+
+        // Trả lại user đã update (có thể kèm JWT hoặc không)
+        return ResponseEntity.ok(user);
     }
 }
