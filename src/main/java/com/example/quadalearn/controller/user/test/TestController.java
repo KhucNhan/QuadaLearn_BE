@@ -5,9 +5,11 @@ import com.example.quadalearn.dto.TestSubmissionRequest;
 import com.example.quadalearn.model.auth.User;
 import com.example.quadalearn.model.testing.Test;
 import com.example.quadalearn.service.testing.ITestService;
+import com.example.quadalearn.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -78,8 +80,8 @@ public class TestController {
             @PathVariable Long testId,
             @RequestBody TestSubmissionRequest request) {
         try {
-            // user = null vì không đăng nhập
-            String analysis = testService.submitTest(null, testId, request);
+            User user = SecurityUtils.getCurrentUser();
+            String analysis = testService.submitTest(user, testId, request);
             return ResponseEntity.ok(Map.of(
                     "testId", testId,
                     "scoreAnalysis", analysis
