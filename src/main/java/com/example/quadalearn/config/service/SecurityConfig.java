@@ -61,6 +61,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/survey/**").permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/grammar-examples/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/knowledge/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/topic-types/**").permitAll()
                         // ==== Public GET Endpoint (phải để trước matcher tổng quát) ====
                         .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll()
                         .requestMatchers(HttpMethod.GET, "/courses/level").permitAll()
@@ -68,9 +71,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/questions/test/1").permitAll()
                         .requestMatchers(HttpMethod.GET, "/vocabularies/**").permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/knowledge/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/grammar-examples/**").permitAll()
+
                         // ==== GET yêu cầu xác thực (user/admin) ====
                         .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/lesson/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/grammar-topics/**").hasAnyRole("USER", "ADMIN")
 
                         // ==== ADMIN quyền POST, PUT, DELETE ====
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
