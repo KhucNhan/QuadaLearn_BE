@@ -16,4 +16,6 @@ public interface IUserService {
     User add(User user);
 
     void delete(Long id);
+
+    User save(User user);
 }

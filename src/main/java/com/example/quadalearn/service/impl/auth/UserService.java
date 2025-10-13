@@ -63,6 +63,11 @@ public class UserService implements IUserService, UserDetailsService {
         iUserRepository.deleteById(id);
     }
 
+    @Override
+    public User save(User user) {
+        return iUserRepository.save(user);
+    }
+
     /**
      * Spring Security mặc định vẫn gọi method này khi login,
      * nên ta sẽ ánh xạ username -> email để đồng bộ.
