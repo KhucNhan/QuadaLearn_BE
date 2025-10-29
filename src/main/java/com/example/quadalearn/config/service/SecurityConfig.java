@@ -65,6 +65,9 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/survey/**").permitAll()
 
+                        .requestMatchers("/api/reading-passages/**").permitAll()
+                        .requestMatchers("/api/vocabularies/**").permitAll()
+
 
                         .requestMatchers(HttpMethod.GET, "/grammar-examples/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/knowledge/**").permitAll()
