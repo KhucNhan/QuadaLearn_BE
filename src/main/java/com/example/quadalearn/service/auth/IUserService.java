@@ -18,4 +18,10 @@ public interface IUserService {
     void delete(Long id);
 
     User save(User user);
+
+    User getUser(Long id);
+
+    User updateUser(Long id, User updated);
+
+    User updateImage(Long id, String url);
 }

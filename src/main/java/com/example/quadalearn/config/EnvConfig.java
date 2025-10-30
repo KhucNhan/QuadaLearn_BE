@@ -1,4 +1,4 @@
-package com.example.quadalearn.config.service;
+package com.example.quadalearn.config;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.context.annotation.Configuration;
