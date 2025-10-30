@@ -1,5 +1,6 @@
-package com.example.quadalearn.config.service;
+package com.example.quadalearn.config;
 
+import com.example.quadalearn.config.service.JwtService;
 import com.example.quadalearn.rest.CustomAccessDeniedHandler;
 import com.example.quadalearn.rest.JwtAuthenticationTokenFilter;
 import com.example.quadalearn.rest.RestAuthenticationEntryPoint;
@@ -32,6 +33,7 @@ public class SecurityConfig {
     private final UserService userService;
     private final JwtAuthenticationTokenFilter jwtAuthenticationFilter;
     private final PasswordEncoder passwordEncoder;
+
 
     public SecurityConfig(UserService userService,
                           JwtAuthenticationTokenFilter jwtAuthenticationFilter,
@@ -78,6 +80,8 @@ public class SecurityConfig {
 
                         .requestMatchers("/oauth2/**").permitAll()
                         .requestMatchers("/login/oauth2/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
+
 
                         .requestMatchers(HttpMethod.GET, "/courses/{id}/lessons").permitAll()
                         // GET /courses và /courses/{id} → USER & ADMIN được truy cập
@@ -95,6 +99,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/grammar-topics/**").hasAnyRole("USER", "ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/vocabulary", "/vocabulary/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("USER", "ADMIN")
+
 
 
                         // Protected ADMIN only
@@ -190,4 +196,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
+
 }

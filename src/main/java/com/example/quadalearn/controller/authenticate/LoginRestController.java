@@ -62,6 +62,7 @@ public class LoginRestController {
                     userInfo.getId(),
                     jwt,
                     userInfo.getName(),
+                    userInfo.getImage(),
                     auth.getAuthorities(),
                     needsCompletion
             ));

@@ -6,8 +6,6 @@ import com.example.quadalearn.model.auth.UserPrinciple;
 import com.example.quadalearn.repository.auth.IUserRepository;
 import com.example.quadalearn.service.auth.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,8 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService implements IUserService, UserDetailsService {
@@ -65,6 +61,30 @@ public class UserService implements IUserService, UserDetailsService {
 
     @Override
     public User save(User user) {
+        return iUserRepository.save(user);
+    }
+
+    @Override
+    public User getUser(Long id) {
+        return iUserRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Override
+    public User updateUser(Long id, User updated) {
+        User user = getUser(id);
+
+        user.setName(updated.getName());
+        user.setGender(updated.getGender());
+        user.setEmail(updated.getEmail());
+
+        return iUserRepository.save(user);
+    }
+
+    @Override
+    public User updateImage(Long id, String url) {
+        User user = getUser(id);
+        user.setImage(url); // lưu avatar
         return iUserRepository.save(user);
     }
 

@@ -28,12 +28,20 @@ public class User {
     private String currentLevel; // vd: A2, B1
     private String goal;         // vd: B2, IELTS 6.5
 
-    // Quan hệ với Role
+    private String image;        // có thể null
+    private String background;   // có thể null
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    private Gender gender;       // có thể null
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles",
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "role_id")})
+    private Set<Role> roles;     // có thể null
 
-    private Set<Role> roles;
-
+    public enum Gender {
+        MALE, FEMALE
+    }
 }
