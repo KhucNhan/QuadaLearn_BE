@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,7 +74,7 @@ public class CourseController {
     public ResponseEntity<List<Course>> getCoursesByLevel(@RequestParam String level) {
         List<Course> courses = courseService.findByLevel(level);
         if (courses.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 204 nếu không có kết quả
+            return ResponseEntity.ok(Collections.emptyList());
         }
         return ResponseEntity.ok(courses); // 200 OK với danh sách course
     }
