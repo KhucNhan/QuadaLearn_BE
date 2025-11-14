@@ -1,7 +1,6 @@
-package com.example.quadalearn.controller;
+package com.example.quadalearn.controller.admin;
 
-
-import com.example.quadalearn.config.service.JwtService;
+import com.example.quadalearn.config.service.FileStorageService;
 import com.example.quadalearn.dto.UserDTO;
 import com.example.quadalearn.model.auth.Role;
 import com.example.quadalearn.model.auth.User;
@@ -10,8 +9,8 @@ import com.example.quadalearn.service.impl.auth.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,16 +18,16 @@ import java.util.List;
 @RequestMapping("/rest")
 public class UserRestController {
     @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
     private UserService userService;
 
     @Autowired
     private RoleService roleService;
+
+    private final FileStorageService fileStorageService;
+
+    public UserRestController(FileStorageService fileStorageService) {
+        this.fileStorageService = fileStorageService;
+    }
 
     /* ---------------- GET ALL USER ------------------------ */
     @RequestMapping(value = "/users", method = RequestMethod.GET)
@@ -47,12 +46,41 @@ public class UserRestController {
     }
 
     /* ---------------- CREATE NEW USER ------------------------ */
-    @RequestMapping(value = "/users", method = RequestMethod.POST)
-    public ResponseEntity<String> createUser(@RequestBody User user) {
-        if (userService.add(user) != null) {
-            return new ResponseEntity<>("Created!", HttpStatus.CREATED);
-        } else {
-            return new ResponseEntity<>("User Existed!", HttpStatus.BAD_REQUEST);
+    @PostMapping(value = "/users", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> createUser(
+            @RequestPart("user") User user,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        try {
+            // ✅ Nếu có upload ảnh thì lưu file
+            if (file != null && !file.isEmpty()) {
+                String fileName = fileStorageService.saveFile(file);
+                user.setImage("/uploads/" + fileName);
+            }
+
+            // ✅ Gọi service thêm user
+            User created = userService.add(user);
+
+            // ✅ Nếu trùng email → service trả null
+            if (created == null) {
+                return ResponseEntity.badRequest().body("User Existed!");
+            }
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        }
+    }
+
+    /* ---------------- UPDATE USER ------------------------ */
+    @PutMapping("/users/{id}")
+    public ResponseEntity<Object> updateUser(@PathVariable Long id, @RequestBody User user) {
+        try {
+            User updatedUser = userService.updateUser(id, user);
+            return new ResponseEntity<>(userService.toDTO(updatedUser), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error updating user: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -63,21 +91,10 @@ public class UserRestController {
         return new ResponseEntity<>("Deleted!", HttpStatus.OK);
     }
 
-//    @RequestMapping(value = "/login", method = RequestMethod.POST)
-//    public ResponseEntity<?> login(@RequestBody User user) {
-//        Authentication authentication = authenticationManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-//        SecurityContextHolder.getContext().setAuthentication(authentication);
-//        String jwt = jwtService.generateTokenLogin(authentication);
-//        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-//        User userInfo = userService.findByUsername(user.getUsername());
-//        return ResponseEntity.ok(new JwtResponse(userInfo.getId(), jwt,
-//                userInfo.getUsername(), userInfo.getUsername(), userDetails.getAuthorities()));
-//    }
-
     @GetMapping("/roles")
     public ResponseEntity<List<Role>> getAllRoles() {
         return new ResponseEntity<>(roleService.findAll(), HttpStatus.OK);
     }
+
 
 }

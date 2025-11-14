@@ -57,9 +57,8 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
 
-                        // Public
-                        .requestMatchers("/rest/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/rest/users").permitAll()
+
+
                         .requestMatchers("/api/ai/**").permitAll()
 
                         .requestMatchers("/tests/**").permitAll()
@@ -69,7 +68,6 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/reading-passages/**").permitAll()
                         .requestMatchers("/api/vocabularies/**").permitAll()
-
 
                         .requestMatchers(HttpMethod.GET, "/grammar-examples/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/knowledge/**").permitAll()
@@ -82,7 +80,6 @@ public class SecurityConfig {
                         .requestMatchers("/login/oauth2/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
 
-
                         .requestMatchers(HttpMethod.GET, "/courses/{id}/lessons").permitAll()
                         // GET /courses và /courses/{id} → USER & ADMIN được truy cập
                         .requestMatchers(HttpMethod.GET, "/courses/level").permitAll()
@@ -90,9 +87,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll() // cụ thể → public
                         .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN") // chung → cần role
 
-
-
-                    
                         // ==== GET yêu cầu xác thực (user/admin) ====
                         .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/lesson/**").hasAnyRole("USER", "ADMIN")
@@ -102,8 +96,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("USER", "ADMIN")
 
 
-
                         // Protected ADMIN only
+                        .requestMatchers("/rest/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")

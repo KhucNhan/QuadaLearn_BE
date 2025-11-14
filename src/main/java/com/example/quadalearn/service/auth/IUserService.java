@@ -23,5 +23,7 @@ public interface IUserService {
 
     User updateUser(Long id, User updated);
 
+    User updateUserAdmin(Long id, User updated);
+
     User updateImage(Long id, String url);
 }
