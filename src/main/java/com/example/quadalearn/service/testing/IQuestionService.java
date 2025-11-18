@@ -1,6 +1,7 @@
 // src/main/java/com/example/quadalearn/service/QuestionService.java
 package com.example.quadalearn.service.testing;
 
+import com.example.quadalearn.dto.course.question.QuestionDTO;
 import com.example.quadalearn.model.testing.Question;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public interface IQuestionService {
     Optional<Question> findById(Long id);
     List<Question> findAll();
     List<Question> findByTestId(Long testId);
-    List<Question> findByKnowledgeTag(String tag);
+//    List<Question> findByKnowledgeTag(String tag);
+    List<QuestionDTO> findByKnowledgeTag(String tag);
     List<Question> findByType(String type);
 }
