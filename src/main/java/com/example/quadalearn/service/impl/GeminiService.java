@@ -92,7 +92,8 @@ public class GeminiService {
                         "1. Tổng hợp % đúng và ước tính CEFR. \n" +
                         "2. Xác định các chủ đề ngữ pháp mà người dùng mạnh và yếu. \n" +
                         "3. Cung cấp phản hồi được cá nhân hóa. \n" +
-                        "4. Đề xuất lộ trình để đạt mục tiêu mục tiêu (" + aim + ").";
+                        "4. Đề xuất lộ trình để đạt mục tiêu mục tiêu (" + aim + ")." +
+                        "5. Trả lời các mục trên bằng tiếng Việt.";
 
 
         return askAI(prompt); // gọi API Gemini như bạn viết trước đó
