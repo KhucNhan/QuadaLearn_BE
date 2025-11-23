@@ -14,7 +14,14 @@ public class KnowledgeController {
 
     private final IKnowledgeGennerateService knowledgeService;
 
-
+    @GetMapping("/by-lesson/{lessonId}")
+    public ResponseEntity<List<Knowledge>> getKnowledgeByLessonId(@PathVariable Long lessonId) {
+        List<Knowledge> result = knowledgeService.getKnowledgeByLessonId(lessonId);
+        if (result == null || result.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(result);
+    }
 
     @GetMapping("/by-type/{typeId}")
     public ResponseEntity<List<Knowledge>> getKnowledgeByTypeId(@PathVariable Long typeId) {

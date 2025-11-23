@@ -38,4 +38,9 @@ public class KnowledgeService implements IKnowledgeGennerateService {
         return iKnowledgeRepository.findByTopicTypeId(typeId);
     }
 
+    @Override
+    public List<Knowledge> getKnowledgeByLessonId(Long lessonId) {
+        return iKnowledgeRepository.findByLessonId(lessonId);
+    }
+
 }

@@ -19,4 +19,6 @@ public interface IKnowledgeGennerateService {
     void delete(Long id);
 
     List<Knowledge> getKnowledgeByTypeId(Long typeId);
+
+    List<Knowledge> getKnowledgeByLessonId(Long lessonId);
 }

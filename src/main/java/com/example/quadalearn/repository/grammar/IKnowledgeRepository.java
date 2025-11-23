@@ -12,4 +12,8 @@ import java.util.List;
 public interface IKnowledgeRepository extends JpaRepository<Knowledge, Long> {
     @Query("SELECT k FROM Knowledge k WHERE k.topicType.id = :typeId")
     List<Knowledge> findByTopicTypeId(@Param("typeId") Long typeId);
+
+    @Query("SELECT k FROM Knowledge k WHERE k.lesson.id = :lessonId")
+    List<Knowledge> findByLessonId(@Param("lessonId") Long lessonId);
+
 }
