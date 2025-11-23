@@ -74,15 +74,57 @@ public class UserRestController {
     }
 
     /* ---------------- UPDATE USER ------------------------ */
-    @PutMapping("/users/{id}")
-    public ResponseEntity<Object> updateUser(@PathVariable Long id, @RequestBody User user) {
+    @PutMapping(value = "/users/{id}", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> updateUser(
+            @PathVariable Long id,
+            @RequestPart("user") User user,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
         try {
-            User updatedUser = userService.updateUser(id, user);
-            return new ResponseEntity<>(userService.toDTO(updatedUser), HttpStatus.OK);
+            User existingUser = userService.getUser(id);
+            if (existingUser == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+
+            // Cập nhật thông tin text
+            existingUser.setName(user.getName());
+            existingUser.setEmail(user.getEmail());
+            existingUser.setGender(user.getGender());
+            existingUser.setGoal(user.getGoal());
+            existingUser.setCurrentLevel(user.getCurrentLevel());
+            existingUser.setStatus(user.getStatus());
+
+            // Nếu có upload ảnh mới
+            if (file != null && !file.isEmpty()) {
+                String fileName = fileStorageService.saveFile(file);
+                existingUser.setImage("/uploads/" + fileName);
+            }
+
+            User updated = userService.save(existingUser);
+
+            return ResponseEntity.ok(updated);
+
         } catch (Exception e) {
-            return new ResponseEntity<>("Error updating user: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
     }
+
+    @PutMapping("/users/{id}/ban")
+    public ResponseEntity<?> banUser(@PathVariable Long id) {
+        User user = userService.getUser(id);
+        user.setStatus(User.Status.BANNED);
+        userService.save(user);
+        return ResponseEntity.ok("User banned");
+    }
+
+    @PutMapping("/users/{id}/unban")
+    public ResponseEntity<?> unbanUser(@PathVariable Long id) {
+        User user = userService.getUser(id);
+        user.setStatus(User.Status.ACTIVE);
+        userService.save(user);
+        return ResponseEntity.ok("User unbanned");
+    }
+
 
     /* ---------------- DELETE USER ------------------------ */
     @RequestMapping(value = "/users/{id}", method = RequestMethod.DELETE)

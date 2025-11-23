@@ -57,8 +57,6 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
 
-
-
                         .requestMatchers("/api/ai/**").permitAll()
 
                         .requestMatchers("/tests/**").permitAll()
