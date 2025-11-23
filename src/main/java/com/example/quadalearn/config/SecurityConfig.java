@@ -69,6 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/reading-passages/**").permitAll()
                         .requestMatchers("/api/vocabularies/**").permitAll()
 
+
                         // ✅ THÊM DÒNG NÀY - Cho phép GET lessons public
                         .requestMatchers(HttpMethod.GET, "/lessons/**").permitAll()
 
@@ -98,6 +99,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("USER", "ADMIN")
 
                         // Protected ADMIN only
+                        .requestMatchers("/rest/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")

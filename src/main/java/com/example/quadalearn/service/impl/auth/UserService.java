@@ -82,17 +82,29 @@ public class UserService implements IUserService, UserDetailsService {
     }
 
     @Override
+    public User updateUserAdmin(Long id, User updated) {
+        User user = getUser(id);
+
+        user.setName(updated.getName());
+        user.setEmail(updated.getEmail());
+        user.setGender(updated.getGender());
+        user.setCurrentLevel(updated.getCurrentLevel());
+        user.setGoal(updated.getGoal());
+        user.setImage(updated.getImage());
+        user.setBackground(updated.getBackground());
+        user.setRoles(updated.getRoles()); // cập nhật role nếu cần
+
+        return iUserRepository.save(user);
+    }
+
+
+    @Override
     public User updateImage(Long id, String url) {
         User user = getUser(id);
         user.setImage(url); // lưu avatar
         return iUserRepository.save(user);
     }
 
-    /**
-     * Spring Security mặc định vẫn gọi method này khi login,
-     * nên ta sẽ ánh xạ username -> email để đồng bộ.
-     */
-//
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = iUserRepository.findByEmail(email)
@@ -102,6 +114,6 @@ public class UserService implements IUserService, UserDetailsService {
 
 
     public UserDTO toDTO(User user) {
-        return new UserDTO(user.getId(), user.getEmail(), user.getRoles());
+        return new UserDTO(user);
     }
 }
