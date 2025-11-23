@@ -1,8 +1,11 @@
 package com.example.quadalearn.model.learning;
 
+import com.example.quadalearn.model.grammar.Knowledge;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "lessons")
@@ -24,4 +27,8 @@ public class Lesson {
     private String title;
     private String content;
     private String knowledgeTag;
+
+    // ✅ Một Lesson có thể có nhiều Knowledge
+    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Knowledge> knowledges;
 }
