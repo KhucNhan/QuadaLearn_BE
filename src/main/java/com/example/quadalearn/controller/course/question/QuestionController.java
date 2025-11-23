@@ -89,9 +89,14 @@ public class QuestionController {
 
 
     // GET questions by knowledge tag
-    @GetMapping("/tag")
-    public ResponseEntity<List<Question>> getQuestionsByKnowledgeTag(@RequestParam String tag) {
-        return ResponseEntity.ok(questionService.findByKnowledgeTag(tag));
+    @GetMapping("/tag/{knowledgeTag}")
+    public ResponseEntity<List<QuestionDTO>> getQuestionsByTag(@PathVariable String knowledgeTag) {
+        try {
+            List<QuestionDTO> questions = questionService.findByKnowledgeTag(knowledgeTag);
+            return ResponseEntity.ok(questions);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     // GET questions by type
