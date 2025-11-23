@@ -14,22 +14,11 @@ public class UserDTO {
     private String image;
     private String background;
     private Set<Role> roles;
+    private String status;
 
-    public UserDTO() {}
+    public UserDTO() {
 
-    public UserDTO(Long id, String name, String email, String gender, String currentLevel,
-                   String goal, String image, String background, Set<Role> roles) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.gender = gender;
-        this.currentLevel = currentLevel;
-        this.goal = goal;
-        this.image = image;
-        this.background = background;
-        this.roles = roles;
     }
-
     // ✅ Constructor để chuyển trực tiếp từ Entity sang DTO
     public UserDTO(User user) {
         this.id = user.getId();
@@ -41,9 +30,9 @@ public class UserDTO {
         this.image = user.getImage();
         this.background = user.getBackground();
         this.roles = user.getRoles();
+        this.status = user.getStatus() != null ? user.getStatus().name() : "ACTIVE";
     }
 
-    // 🔹 Getters và Setters
     public Long getId() {
         return id;
     }
@@ -114,5 +103,13 @@ public class UserDTO {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
