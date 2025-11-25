@@ -20,7 +20,7 @@ public class GeminiService {
     private String geminiApiKey;
 
     private static final String GEMINI_API_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=";
+            "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=";
 
     public String askAI(String prompt) throws Exception {
         // --- JSON request
@@ -92,7 +92,8 @@ public class GeminiService {
                         "1. Tổng hợp % đúng và ước tính CEFR. \n" +
                         "2. Xác định các chủ đề ngữ pháp mà người dùng mạnh và yếu. \n" +
                         "3. Cung cấp phản hồi được cá nhân hóa. \n" +
-                        "4. Đề xuất lộ trình để đạt mục tiêu mục tiêu (" + aim + ").";
+                        "4. Đề xuất lộ trình để đạt mục tiêu mục tiêu (" + aim + ")." +
+                        "5. Trả lời các mục trên bằng tiếng Việt.";
 
 
         return askAI(prompt); // gọi API Gemini như bạn viết trước đó

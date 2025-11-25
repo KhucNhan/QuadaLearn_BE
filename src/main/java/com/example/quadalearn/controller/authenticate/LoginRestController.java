@@ -42,9 +42,14 @@ public class LoginRestController {
                 log.warn("❌ User not found: {}", user.getEmail());
                 throw new UsernameNotFoundException("User not found");
             }
+
             if (!passwordEncoder.matches(user.getPassword(), userInfo.getPassword())) {
                 log.warn("❌ Bad credentials for email={}", user.getEmail());
                 throw new BadCredentialsException("Bad credentials");
+            }
+
+            if (user.getStatus() == User.Status.BANNED) {
+                throw new RuntimeException("Account is banned");
             }
 
             // Authenticate
@@ -62,6 +67,7 @@ public class LoginRestController {
                     userInfo.getId(),
                     jwt,
                     userInfo.getName(),
+                    userInfo.getImage(),
                     auth.getAuthorities(),
                     needsCompletion
             ));

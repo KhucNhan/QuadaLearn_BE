@@ -6,8 +6,6 @@ import com.example.quadalearn.model.auth.UserPrinciple;
 import com.example.quadalearn.repository.auth.IUserRepository;
 import com.example.quadalearn.service.auth.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,8 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService implements IUserService, UserDetailsService {
@@ -68,11 +64,47 @@ public class UserService implements IUserService, UserDetailsService {
         return iUserRepository.save(user);
     }
 
-    /**
-     * Spring Security mặc định vẫn gọi method này khi login,
-     * nên ta sẽ ánh xạ username -> email để đồng bộ.
-     */
-//
+    @Override
+    public User getUser(Long id) {
+        return iUserRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Override
+    public User updateUser(Long id, User updated) {
+        User user = getUser(id);
+
+        user.setName(updated.getName());
+        user.setGender(updated.getGender());
+        user.setEmail(updated.getEmail());
+
+        return iUserRepository.save(user);
+    }
+
+    @Override
+    public User updateUserAdmin(Long id, User updated) {
+        User user = getUser(id);
+
+        user.setName(updated.getName());
+        user.setEmail(updated.getEmail());
+        user.setGender(updated.getGender());
+        user.setCurrentLevel(updated.getCurrentLevel());
+        user.setGoal(updated.getGoal());
+        user.setImage(updated.getImage());
+        user.setBackground(updated.getBackground());
+        user.setRoles(updated.getRoles()); // cập nhật role nếu cần
+
+        return iUserRepository.save(user);
+    }
+
+
+    @Override
+    public User updateImage(Long id, String url) {
+        User user = getUser(id);
+        user.setImage(url); // lưu avatar
+        return iUserRepository.save(user);
+    }
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = iUserRepository.findByEmail(email)
@@ -82,6 +114,6 @@ public class UserService implements IUserService, UserDetailsService {
 
 
     public UserDTO toDTO(User user) {
-        return new UserDTO(user.getId(), user.getEmail(), user.getRoles());
+        return new UserDTO(user);
     }
 }

@@ -1,5 +1,6 @@
-package com.example.quadalearn.config.service;
+package com.example.quadalearn.config;
 
+import com.example.quadalearn.config.service.JwtService;
 import com.example.quadalearn.rest.CustomAccessDeniedHandler;
 import com.example.quadalearn.rest.JwtAuthenticationTokenFilter;
 import com.example.quadalearn.rest.RestAuthenticationEntryPoint;
@@ -33,6 +34,7 @@ public class SecurityConfig {
     private final JwtAuthenticationTokenFilter jwtAuthenticationFilter;
     private final PasswordEncoder passwordEncoder;
 
+
     public SecurityConfig(UserService userService,
                           JwtAuthenticationTokenFilter jwtAuthenticationFilter,
                           PasswordEncoder passwordEncoder) {
@@ -54,7 +56,6 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-
                         // Public
                         .requestMatchers("/rest/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/rest/users").permitAll()
@@ -69,45 +70,48 @@ public class SecurityConfig {
                         .requestMatchers("/api/vocabularies/**").permitAll()
 
 
+                        // ✅ THÊM DÒNG NÀY - Cho phép GET lessons public
+                        .requestMatchers(HttpMethod.GET, "/lessons/**").permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/grammar-examples/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/knowledge/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/topic-types/**").permitAll()
+
                         // ==== Public GET Endpoint (phải để trước matcher tổng quát) ====
                         .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll()
                         .requestMatchers(HttpMethod.GET, "/courses/level").permitAll()
 
                         .requestMatchers("/oauth2/**").permitAll()
                         .requestMatchers("/login/oauth2/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/courses/{id}/lessons").permitAll()
-                        // GET /courses và /courses/{id} → USER & ADMIN được truy cập
-                        .requestMatchers(HttpMethod.GET, "/courses/level").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/courses/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/questions/test/1").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/courses/top6").permitAll() // cụ thể → public
-                        .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN") // chung → cần role
+                        .requestMatchers(HttpMethod.GET, "/questions/**").permitAll()
 
-
-
-                    
                         // ==== GET yêu cầu xác thực (user/admin) ====
-                        .requestMatchers(HttpMethod.GET, "/courses/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/lesson/**").hasAnyRole("USER", "ADMIN")
+                        // ⚠️ XÓA DÒNG NÀY vì đã permitAll ở trên
+                        // .requestMatchers(HttpMethod.GET, "/lesson/**").hasAnyRole("USER", "ADMIN")
+
                         .requestMatchers(HttpMethod.GET, "/grammar-topics/**").hasAnyRole("USER", "ADMIN")
-
                         .requestMatchers(HttpMethod.GET, "/vocabulary", "/vocabulary/**").hasAnyRole("USER", "ADMIN")
-
+                        .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("USER", "ADMIN")
 
                         // Protected ADMIN only
+                        .requestMatchers("/rest/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/lesson").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/lesson/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/lesson/**").hasRole("ADMIN")
+
+                        // ✅ ADMIN endpoints cho lessons
+                        .requestMatchers(HttpMethod.POST, "/lessons/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/lessons/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/lessons/**").hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.POST, "/vocabulary").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/vocabulary/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/vocabulary/**").hasRole("ADMIN")
-
 
                         // Tất cả request còn lại cần authenticated
                         .anyRequest().authenticated()
@@ -190,4 +194,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
+
 }
