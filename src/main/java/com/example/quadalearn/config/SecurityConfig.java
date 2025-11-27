@@ -91,13 +91,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/questions/test/1").permitAll()
                         .requestMatchers(HttpMethod.GET, "/questions/**").permitAll()
 
-                        // ==== GET yêu cầu xác thực (user/admin) ====
-                        // ⚠️ XÓA DÒNG NÀY vì đã permitAll ở trên
-                        // .requestMatchers(HttpMethod.GET, "/lesson/**").hasAnyRole("USER", "ADMIN")
+
 
                         .requestMatchers(HttpMethod.GET, "/grammar-topics/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/vocabulary", "/vocabulary/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/vocabulary", "/vocabulary/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("USER", "ADMIN")
+
+
+                        .requestMatchers(HttpMethod.POST, "/vocabularies/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/vocabularies/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/vocabularies/**").permitAll()
 
                         // Protected ADMIN only
                         .requestMatchers("/rest/**").hasRole("ADMIN")
@@ -110,9 +113,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/lessons/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/lessons/**").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.POST, "/vocabulary").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/vocabulary/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/vocabulary/**").hasRole("ADMIN")
+
 
                         // Tất cả request còn lại cần authenticated
                         .anyRequest().authenticated()
