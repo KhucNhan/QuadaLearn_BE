@@ -7,6 +7,7 @@ import com.example.quadalearn.model.testing.Question;
 import com.example.quadalearn.model.testing.Test;
 import com.example.quadalearn.model.testing.UserAnswer;
 import com.example.quadalearn.model.testing.UserTest;
+import com.example.quadalearn.repository.auth.IUserRepository;
 import com.example.quadalearn.repository.testing.QuestionRepository;
 import com.example.quadalearn.repository.testing.TestRepository;
 import com.example.quadalearn.repository.testing.UserAnswerRepository;
@@ -30,6 +31,7 @@ public class TestServiceImpl implements ITestService {
     private final QuestionRepository questionRepo;
     private final GeminiService geminiService;
     private final UserTestRepository userTestRepo;
+    private final IUserRepository userRepository;
 
 
     @Transactional
@@ -126,5 +128,76 @@ public class TestServiceImpl implements ITestService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Double calculateScore(Long testId, TestSubmissionRequest request) {
+        // Lấy tất cả câu hỏi của test
+        List<Question> questions = questionRepo.findByTest_Id(testId);
+
+        if (questions.isEmpty()) {
+            return 0.0;
+        }
+
+        // Đếm số câu trả lời đúng
+        int correctCount = 0;
+
+        for (UserAnswerDTO answer : request.getAnswers()) {
+            // Tìm câu hỏi tương ứng
+            Question question = questions.stream()
+                    .filter(q -> q.getId().equals(answer.getQuestionId()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (question != null && answer.getAnswer() != null) {
+                // Kiểm tra đáp án có đúng không
+                if (isCorrectAnswer(question, answer.getAnswer())) {
+                    correctCount++;
+                }
+            }
+        }
+
+        // Tính điểm theo % (0-100)
+        double score = ((double) correctCount / questions.size()) * 100;
+
+        // Làm tròn 2 chữ số thập phân
+        return Math.round(score * 100.0) / 100.0;
+    }
+
+    /**
+     * ✅ Helper method: Kiểm tra đáp án có đúng không
+     */
+    private boolean isCorrectAnswer(Question question, String userAnswer) {
+        if (userAnswer == null || question.getAnswerKey() == null) {
+            return false;
+        }
+
+        // Lấy đáp án đúng dựa vào answerKey
+        String correctAnswer = null;
+        String key = question.getAnswerKey().toUpperCase().trim();
+
+        switch (key) {
+            case "A":
+                correctAnswer = question.getA();
+                break;
+            case "B":
+                correctAnswer = question.getB();
+                break;
+            case "C":
+                correctAnswer = question.getC();
+                break;
+            case "D":
+                correctAnswer = question.getD();
+                break;
+            default:
+                return false;
+        }
+
+        if (correctAnswer == null) {
+            return false;
+        }
+
+        // So sánh (không phân biệt HOA/thường, trim khoảng trắng)
+        return userAnswer.trim().equalsIgnoreCase(correctAnswer.trim());
     }
 }

@@ -5,6 +5,7 @@ import com.example.quadalearn.dto.TestSubmissionRequest;
 import com.example.quadalearn.model.auth.User;
 import com.example.quadalearn.model.testing.Test;
 import com.example.quadalearn.service.testing.ITestService;
+import com.example.quadalearn.service.testing.IUserTestService;
 import com.example.quadalearn.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class TestController {
 
     private final ITestService testService;
+    private final IUserTestService userTestService;
 
     // Lấy tất cả bài kiểm tra
     @GetMapping("")
@@ -81,7 +83,14 @@ public class TestController {
             @RequestBody TestSubmissionRequest request) {
         try {
             User user = SecurityUtils.getCurrentUser();
+            if (user == null) {
+                throw new RuntimeException("Current user is null. Check JWT filter and loadUserByUsername.");
+            }
             String analysis = testService.submitTest(user, testId, request);
+            Double score = testService.calculateScore(testId, request);
+            Test test = testService.findById(testId)
+                    .orElseThrow(() -> new RuntimeException("Test not found"));
+            userTestService.saveTestResult(user, test, request, score);
             return ResponseEntity.ok(Map.of(
                     "testId", testId,
                     "scoreAnalysis", analysis
