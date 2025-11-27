@@ -3,6 +3,7 @@ package com.example.quadalearn.controller.authenticate;
 import com.example.quadalearn.config.service.JwtResponse;
 import com.example.quadalearn.config.service.JwtService;
 import com.example.quadalearn.model.auth.User;
+import com.example.quadalearn.repository.auth.IUserRepository;
 import com.example.quadalearn.service.auth.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
@@ -33,6 +35,8 @@ public class LoginRestController {
     private IUserService userService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private IUserRepository userRepository;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
@@ -57,6 +61,10 @@ public class LoginRestController {
                     new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
+
+            User userInf = userRepository.findByEmail(user.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            userRepository.updateLastLogin(userInf.getId(), LocalDateTime.now());
 
             // Tạo JWT
             String jwt = jwtService.generateTokenLogin(auth);
@@ -95,7 +103,7 @@ public class LoginRestController {
         user.setCurrentLevel(currentLevel);
         user.setGoal(goal);
 
-        userService.save(user);
+        userService.updateUser(user.getId(), user);
 
         // Trả lại user đã update (có thể kèm JWT hoặc không)
         return ResponseEntity.ok(user);

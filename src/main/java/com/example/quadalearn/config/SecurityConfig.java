@@ -69,6 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/reading-passages/**").permitAll()
                         .requestMatchers("/api/vocabularies/**").permitAll()
                         .requestMatchers("/user-tests/**").permitAll()
+                        .requestMatchers("/notifications/**").permitAll()
 
 
                         // ✅ THÊM DÒNG NÀY - Cho phép GET lessons public

@@ -3,6 +3,7 @@ package com.example.quadalearn.model.auth;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -49,4 +50,9 @@ public class User {
 
     public enum Gender { MALE, FEMALE }
     public enum Status { ACTIVE, BANNED }
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt; // ✅ Thêm field này
+
+    @Column(name = "last_notification_sent_at")
+    private LocalDateTime lastNotificationSentAt;
 }

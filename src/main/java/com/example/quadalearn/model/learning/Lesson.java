@@ -25,6 +25,7 @@ public class Lesson {
     private Course course;
 
     private String title;
+    @Column(length = 2000)
     private String content;
     private String knowledgeTag;
 
