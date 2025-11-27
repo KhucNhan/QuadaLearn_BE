@@ -9,4 +9,5 @@ import java.util.List;
 public class TestSubmissionRequest {
     private String aim;
     private List<UserAnswerDTO> answers;
+    private int timeSpent;
 }

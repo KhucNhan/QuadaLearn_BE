@@ -15,10 +15,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query(value = "SELECT * FROM courses LIMIT 6", nativeQuery = true)
     List<Course> findTop6Courses();
 
-
     @Query("SELECT c FROM Course c LEFT JOIN FETCH c.lessons WHERE c.id = :courseId")
     Optional<Course> findCourseWithLessonsById(@Param("courseId") Long courseId);
-
-
-
 }
