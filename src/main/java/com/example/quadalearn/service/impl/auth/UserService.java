@@ -1,6 +1,7 @@
 package com.example.quadalearn.service.impl.auth;
 
 import com.example.quadalearn.dto.UserDTO;
+import com.example.quadalearn.dto.user.CustomUserDetails;
 import com.example.quadalearn.model.auth.User;
 import com.example.quadalearn.model.auth.UserPrinciple;
 import com.example.quadalearn.repository.auth.IUserRepository;
@@ -109,7 +110,7 @@ public class UserService implements IUserService, UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = iUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-        return UserPrinciple.build(user);
+        return new CustomUserDetails(user);
     }
 
 

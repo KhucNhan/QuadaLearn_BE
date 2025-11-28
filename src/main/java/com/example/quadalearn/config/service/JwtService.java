@@ -1,6 +1,7 @@
 package com.example.quadalearn.config.service;
 
 
+import com.example.quadalearn.dto.user.CustomUserDetails;
 import com.example.quadalearn.model.auth.User;
 import com.example.quadalearn.model.auth.UserPrinciple;
 import io.jsonwebtoken.*;
@@ -19,7 +20,7 @@ public class JwtService {
     private static final long EXPIRE_TIME = 86400000000L;
 
     public String generateTokenLogin(Authentication authentication) {
-        UserPrinciple userPrincipal = (UserPrinciple) authentication.getPrincipal();
+        CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))

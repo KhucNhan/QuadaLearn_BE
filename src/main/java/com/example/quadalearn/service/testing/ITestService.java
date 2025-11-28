@@ -19,4 +19,5 @@ public interface ITestService {
     List<Test> findByType(String type);
 
     String submitTest(User user, Long testId, TestSubmissionRequest request);
+    Double calculateScore(Long testId, TestSubmissionRequest request);
 }
