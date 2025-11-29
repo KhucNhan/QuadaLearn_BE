@@ -2,10 +2,12 @@ package com.example.quadalearn.dto.user;
 
 import com.example.quadalearn.model.auth.User;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 public class CustomUserDetails implements UserDetails {
     private final User user;
@@ -20,9 +22,10 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Nếu User của bạn có field role, bạn có thể map sang GrantedAuthority
-        // Ví dụ: return List.of(new SimpleGrantedAuthority(user.getRole()));
-        return Collections.emptyList(); // chưa dùng role thì trả về list rỗng
+        // ✅ THAY THẾ logic trả về list rỗng bằng logic lấy Roles từ Entity User
+        return user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override

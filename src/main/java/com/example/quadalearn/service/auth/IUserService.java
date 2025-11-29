@@ -4,6 +4,7 @@ import com.example.quadalearn.dto.UserDTO;
 import com.example.quadalearn.model.auth.User;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface IUserService {
@@ -11,6 +12,10 @@ public interface IUserService {
 
     UserDTO findById(Long id);
 
+    // ✅ PHƯƠNG THỨC MỚI: Load User bằng email và Roles (dùng cho JWT Filter/UserDetailsService)
+    Optional<User> findByEmailWithRoles(String email);
+
+    // Phương thức cũ (Chỉ dùng cho các logic không cần Roles ngay):
     User findByEmail(String email);
 
     User add(User user);

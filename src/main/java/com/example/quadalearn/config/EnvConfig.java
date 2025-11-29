@@ -10,7 +10,21 @@ public class EnvConfig {
     @PostConstruct
     public void loadEnv() {
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
-        System.setProperty("GOOGLE_CLIENT_ID", dotenv.get("GOOGLE_CLIENT_ID"));
-        System.setProperty("GOOGLE_CLIENT_SECRET", dotenv.get("GOOGLE_CLIENT_SECRET"));
+
+        String googleClientId = dotenv.get("GOOGLE_CLIENT_ID");
+        String googleClientSecret = dotenv.get("GOOGLE_CLIENT_SECRET");
+
+        // Thêm kiểm tra null
+        if (googleClientId != null) {
+            System.setProperty("GOOGLE_CLIENT_ID", googleClientId);
+        } else {
+            System.err.println("❌ Cảnh báo: GOOGLE_CLIENT_ID bị thiếu. Kiểm tra file .env.");
+        }
+
+        if (googleClientSecret != null) {
+            System.setProperty("GOOGLE_CLIENT_SECRET", googleClientSecret);
+        } else {
+            System.err.println("❌ Cảnh báo: GOOGLE_CLIENT_SECRET bị thiếu. Kiểm tra file .env.");
+        }
     }
 }
