@@ -86,6 +86,11 @@ public class TestController {
             if (user == null) {
                 throw new RuntimeException("Current user is null. Check JWT filter and loadUserByUsername.");
             }
+            if (request.getTimeSpent() == 0) {
+                return ResponseEntity
+                        .badRequest()
+                        .body(Map.of("error", "Test already submitted"));
+            }
             String analysis = testService.submitTest(user, testId, request);
             Double score = testService.calculateScore(testId, request);
             Test test = testService.findById(testId)
