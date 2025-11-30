@@ -9,7 +9,9 @@ import com.example.quadalearn.model.auth.User;
 import com.example.quadalearn.model.testing.*;
 import com.example.quadalearn.repository.auth.IUserRepository;
 import com.example.quadalearn.repository.testing.QuestionRepository;
+import com.example.quadalearn.repository.testing.TestRepository;
 import com.example.quadalearn.repository.testing.UserTestRepository;
+import com.example.quadalearn.service.impl.GeminiService;
 import com.example.quadalearn.service.testing.IUserTestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,55 +31,7 @@ public class UserTestServiceImpl implements IUserTestService {
     private final UserTestRepository userTestRepository;
     private final QuestionRepository questionRepository;
     private final IUserRepository userRepository;
-
-    /**
-     * Lưu kết quả bài test
-     */
-    @Transactional
-    public UserTest saveTestResult(User user, Test test, TestSubmissionRequest request, Double score) {
-        // Tạo UserTest
-        UserTest userTest = new UserTest(
-                user,
-                test,
-                score,
-                LocalDateTime.now(),
-                request.getTimeSpent()
-        );
-
-        userTest = userTestRepository.save(userTest);
-
-        // Lấy danh sách câu hỏi của test
-        List<Question> questions = questionRepository.findByTest_Id(test.getId());
-
-        // Tạo UserAnswers
-        List<UserAnswer> userAnswers = new ArrayList<>();
-        for (var answer : request.getAnswers()) {
-            Question question = questions.stream()
-                    .filter(q -> q.getId().equals(answer.getQuestionId()))
-                    .findFirst()
-                    .orElse(null);
-
-            if (question != null) {
-                // Kiểm tra đáp án đúng hay sai
-                boolean isCorrect = checkAnswer(question, answer.getAnswer());
-
-                UserAnswer userAnswer = new UserAnswer(
-                        userTest,
-                        question,
-                        answer.getAnswer(),
-                        isCorrect
-                );
-                userAnswers.add(userAnswer);
-            }
-        }
-
-        userTest.setUserAnswers(userAnswers);
-        return userTestRepository.save(userTest);
-    }
-
-    /**
-     * Lấy danh sách lịch sử của user
-     */
+    @Override
     public List<TestHistoryDTO> getTestHistory(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -104,6 +60,7 @@ public class UserTestServiceImpl implements IUserTestService {
     /**
      * Lấy chi tiết 1 bài test
      */
+    @Override
     public TestHistoryDetailDTO getTestDetail(Long userTestId) {
         UserTest userTest = userTestRepository.findByIdWithAnswers(userTestId)
                 .orElseThrow(() -> new RuntimeException("Test not found"));
@@ -164,36 +121,4 @@ public class UserTestServiceImpl implements IUserTestService {
     /**
      * ✅ Kiểm tra đáp án đúng hay sai - Updated để dùng a,b,c,d
      */
-    private boolean checkAnswer(Question question, String userAnswer) {
-        if (userAnswer == null || question.getAnswerKey() == null) {
-            return false;
-        }
-
-        // Lấy đáp án đúng dựa vào answerKey
-        String correctAnswer = null;
-        String key = question.getAnswerKey().toUpperCase().trim();
-
-        switch (key) {
-            case "A":
-                correctAnswer = question.getA();
-                break;
-            case "B":
-                correctAnswer = question.getB();
-                break;
-            case "C":
-                correctAnswer = question.getC();
-                break;
-            case "D":
-                correctAnswer = question.getD();
-                break;
-            default:
-                return false;
-        }
-
-        if (correctAnswer == null) {
-            return false;
-        }
-
-        return userAnswer.trim().equalsIgnoreCase(correctAnswer.trim());
-    }
 }

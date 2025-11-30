@@ -86,20 +86,19 @@ public class TestController {
             if (user == null) {
                 throw new RuntimeException("Current user is null. Check JWT filter and loadUserByUsername.");
             }
+
+            // ✅ Validate
             if (request.getTimeSpent() == 0) {
                 return ResponseEntity
                         .badRequest()
-                        .body(Map.of("error", "Test already submitted"));
+                        .body(Map.of("error", "Invalid time spent"));
             }
-            String analysis = testService.submitTest(user, testId, request);
-            Double score = testService.calculateScore(testId, request);
-            Test test = testService.findById(testId)
-                    .orElseThrow(() -> new RuntimeException("Test not found"));
-            userTestService.saveTestResult(user, test, request, score);
-            return ResponseEntity.ok(Map.of(
-                    "testId", testId,
-                    "scoreAnalysis", analysis
-            ));
+
+            // ✅ CHỈ GỌI 1 METHOD - submitTestAndGetAnalysis
+            Map<String, Object> result = testService.submitTestAndGetAnalysis(user, testId, request);
+
+            return ResponseEntity.ok(result);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity

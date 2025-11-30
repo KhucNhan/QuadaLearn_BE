@@ -84,7 +84,7 @@ public class JwtService {
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(getSignInKey()) // ✅ Sửa: Dùng Key object
+                    .setSigningKey(getSignInKey()) // Sửa: Dùng Key object
                     .build()
                     .parse(authToken);
             return true;
