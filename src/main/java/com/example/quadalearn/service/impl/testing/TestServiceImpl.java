@@ -18,10 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -73,101 +71,90 @@ public class TestServiceImpl implements ITestService {
     }
 
     @Transactional
-    @Override
-    public String submitTest(User user, Long testId, TestSubmissionRequest request) {
-        // 1. Tạo bản ghi user_test
+    public Map<String, Object> submitTestAndGetAnalysis(User user, Long testId, TestSubmissionRequest request) {
+        // 1. Lấy test
+        Test test = testRepository.findById(testId)
+                .orElseThrow(() -> new RuntimeException("Test not found"));
+
+        // 2. Lấy danh sách câu hỏi
+        List<Question> questions = questionRepo.findByTest_Id(testId);
+
+        // 3. Tạo UserTest (CHƯA SAVE)
         UserTest userTest = UserTest.builder()
                 .user(user)
-                .test(Test.builder().id(testId).build())
+                .test(test)
                 .score(0.0)
+                .time(LocalDateTime.now())
+                .timeSpent(request.getTimeSpent())
                 .build();
-        userTestRepo.save(userTest);
 
+        // 4. Xử lý từng câu trả lời và tính điểm
+        List<UserAnswer> userAnswers = new ArrayList<>();
+        List<Map<String, String>> answersForAI = new ArrayList<>();
         int correctCount = 0;
 
-        // 2. Lưu từng câu trả lời
-        for (UserAnswerDTO dto : request.getAnswers()) {
-            Question q = questionRepo.findById(dto.getQuestionId())
-                    .orElseThrow(() -> new RuntimeException("Question not found: " + dto.getQuestionId()));
+        for (var answerDTO : request.getAnswers()) {
+            Question question = questions.stream()
+                    .filter(q -> q.getId().equals(answerDTO.getQuestionId()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Question not found: " + answerDTO.getQuestionId()));
 
-            boolean isCorrect = q.getAnswerKey().equalsIgnoreCase(dto.getAnswer());
+            // Check đúng/sai
+            String userAnswerText = answerDTO.getAnswer();
+            boolean isCorrect = checkAnswer(question, userAnswerText);
+
             if (isCorrect) correctCount++;
 
-            UserAnswer ua = UserAnswer.builder()
+            // Tạo UserAnswer (liên kết với userTest)
+            UserAnswer userAnswer = UserAnswer.builder()
                     .userTest(userTest)
-                    .question(q)
-                    .answer(dto.getAnswer())
+                    .question(question)
+                    .answer(userAnswerText)
                     .isCorrect(isCorrect)
                     .build();
 
-            userAnswerRepo.save(ua);
+            userAnswers.add(userAnswer);
+
+            // Chuẩn bị data cho AI
+            Map<String, String> answerMap = new HashMap<>();
+            answerMap.put("question", question.getContent());
+            answerMap.put("correct_answer", question.getAnswerKey());
+            answerMap.put("user_answer", userAnswerText != null ? userAnswerText : "");
+            answerMap.put("knowledgeTag", question.getKnowledgeTag() != null ? question.getKnowledgeTag() : "");
+            answersForAI.add(answerMap);
         }
 
-        // 3. Tính điểm
-        double score = (double) correctCount / request.getAnswers().size() * 100.0;
+        // 5. Tính điểm
+        double score = questions.isEmpty() ? 0.0 :
+                (double) correctCount / questions.size() * 100.0;
         userTest.setScore(score);
-        userTestRepo.save(userTest);
 
-        // 4. Chuẩn bị JSON gửi AI
-        List<Map<String, String>> answersJson = request.getAnswers().stream().map(dto -> {
-            Question q = questionRepo.findById(dto.getQuestionId()).orElseThrow();
+        // 6. Set UserAnswers vào UserTest
+        userTest.setUserAnswers(userAnswers);
 
-            Map<String, String> map = new HashMap<>();
-            map.put("question", q.getContent());
-            map.put("correct_answer", q.getAnswerKey());
-            map.put("user_answer", dto.getAnswer() != null ? dto.getAnswer() : "");
-            map.put("knowledgeTag", q.getKnowledgeTag() != null ? q.getKnowledgeTag() : "");
+        // 7. ✅ SAVE DUY NHẤT 1 LẦN (cascade sẽ tự động save userAnswers)
+        UserTest savedUserTest = userTestRepo.save(userTest);
 
-            return map;
-        }).toList();
-
-
-        // 5. Gửi sang Gemini để phân tích
+        // 8. Gọi AI phân tích
+        String analysis;
         try {
-            return geminiService.analyzeTest(request.getAim(), answersJson, score);
+            analysis = geminiService.analyzeTest(request.getAim(), answersForAI, score);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to get AI analysis: " + e.getMessage());
         }
+
+        // 9. Trả về kết quả
+        return Map.of(
+                "testId", testId,
+                "userTestId", savedUserTest.getId(),
+                "score", score,
+                "correctCount", correctCount,
+                "totalQuestions", questions.size(),
+                "scoreAnalysis", analysis
+        );
     }
 
-    @Override
-    public Double calculateScore(Long testId, TestSubmissionRequest request) {
-        // Lấy tất cả câu hỏi của test
-        List<Question> questions = questionRepo.findByTest_Id(testId);
-
-        if (questions.isEmpty()) {
-            return 0.0;
-        }
-
-        // Đếm số câu trả lời đúng
-        int correctCount = 0;
-
-        for (UserAnswerDTO answer : request.getAnswers()) {
-            // Tìm câu hỏi tương ứng
-            Question question = questions.stream()
-                    .filter(q -> q.getId().equals(answer.getQuestionId()))
-                    .findFirst()
-                    .orElse(null);
-
-            if (question != null && answer.getAnswer() != null) {
-                // Kiểm tra đáp án có đúng không
-                if (isCorrectAnswer(question, answer.getAnswer())) {
-                    correctCount++;
-                }
-            }
-        }
-
-        // Tính điểm theo % (0-100)
-        double score = ((double) correctCount / questions.size()) * 100;
-
-        // Làm tròn 2 chữ số thập phân
-        return Math.round(score * 100.0) / 100.0;
-    }
-
-    /**
-     * ✅ Helper method: Kiểm tra đáp án có đúng không
-     */
-    private boolean isCorrectAnswer(Question question, String userAnswer) {
+    private boolean checkAnswer(Question question, String userAnswer) {
         if (userAnswer == null || question.getAnswerKey() == null) {
             return false;
         }
@@ -197,7 +184,6 @@ public class TestServiceImpl implements ITestService {
             return false;
         }
 
-        // So sánh (không phân biệt HOA/thường, trim khoảng trắng)
         return userAnswer.trim().equalsIgnoreCase(correctAnswer.trim());
     }
 }
