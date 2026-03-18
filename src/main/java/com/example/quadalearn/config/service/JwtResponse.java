@@ -15,16 +15,9 @@ public class JwtResponse {
     private String name;
     private String avatar;
     private boolean needsCompletion;
+    private String status;
 
     private final Collection<? extends GrantedAuthority> authorities;
-
-
-    public JwtResponse(Long id, String token, String name, Collection<? extends GrantedAuthority> authorities) {
-        this.id = id;
-        this.token = token;
-        this.name = name;
-        this.authorities = authorities;
-    }
 
     public JwtResponse(Long id, String token, String name, String avatar, Collection<? extends GrantedAuthority> authorities, boolean needsCompletion) {
         this.id = id;
@@ -35,6 +28,26 @@ public class JwtResponse {
         this.needsCompletion = needsCompletion;
     }
 
+    public JwtResponse(Long id, String token, String name, String avatar,
+                       Collection<? extends GrantedAuthority> authorities,
+                       boolean needsCompletion,
+                       String status) { // ✅ thêm param
+        this.id = id;
+        this.token = token;
+        this.name = name;
+        this.avatar = avatar;
+        this.authorities = authorities;
+        this.needsCompletion = needsCompletion;
+        this.status = status;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;

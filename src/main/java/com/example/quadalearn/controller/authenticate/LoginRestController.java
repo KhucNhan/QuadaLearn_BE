@@ -38,6 +38,8 @@ public class LoginRestController {
     @Autowired
     private IUserRepository userRepository;
 
+    // package com.example.quadalearn.controller.authenticate;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         try {
@@ -47,16 +49,20 @@ public class LoginRestController {
                 throw new UsernameNotFoundException("User not found");
             }
 
+            // 1. ✅ KIỂM TRA TRẠNG THÁI (BANNED) NGAY SAU KHI TÌM THẤY USER
+            if (userInfo.getStatus() == User.Status.BANNED) {
+                log.warn("❌ Login FAILED: Account is banned for email={}", user.getEmail());
+                // Trả về lỗi BadCredentials để tránh lộ thông tin account
+                throw new BadCredentialsException("Account is banned");
+            }
+
+            // 2. KIỂM TRA MẬT KHẨU
             if (!passwordEncoder.matches(user.getPassword(), userInfo.getPassword())) {
                 log.warn("❌ Bad credentials for email={}", user.getEmail());
                 throw new BadCredentialsException("Bad credentials");
             }
 
-            if (user.getStatus() == User.Status.BANNED) {
-                throw new RuntimeException("Account is banned");
-            }
-
-            // Authenticate
+            // 3. XÁC THỰC VÀ TẠO JWT (Chỉ thực hiện khi user là ACTIVE và mật khẩu đúng)
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
             );
@@ -66,7 +72,7 @@ public class LoginRestController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
             userRepository.updateLastLogin(userInf.getId(), LocalDateTime.now());
 
-            // Tạo JWT
+            // Tạo JWT và Response
             String jwt = jwtService.generateTokenLogin(auth);
             boolean needsCompletion = (userInfo.getGoal() == null || userInfo.getCurrentLevel() == null);
 
@@ -77,11 +83,13 @@ public class LoginRestController {
                     userInfo.getName(),
                     userInfo.getImage(),
                     auth.getAuthorities(),
-                    needsCompletion
+                    needsCompletion,
+                    userInfo.getStatus().name()
             ));
 
         } catch (UsernameNotFoundException | BadCredentialsException e) {
             log.error("❌ Login FAILED: email={}", user.getEmail(), e);
+            // Trả về Exception tiêu chuẩn để frontend hiển thị lỗi
             throw e;
         }
     }

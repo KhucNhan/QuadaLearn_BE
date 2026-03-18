@@ -9,10 +9,10 @@ import com.example.quadalearn.model.testing.Test;
 import com.example.quadalearn.model.testing.UserTest;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface IUserTestService {
     public List<TestHistoryDTO> getTestHistory(Long id);
     public TestHistoryDetailDTO getTestDetail(Long userTestId);
-    public UserTest saveTestResult(User user, Test test, TestSubmissionRequest request, Double score);
 }

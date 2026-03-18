@@ -6,6 +6,7 @@ import com.example.quadalearn.model.auth.User;
 import com.example.quadalearn.model.testing.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface ITestService {
@@ -17,7 +18,5 @@ public interface ITestService {
     List<Test> findAll();
     List<Test> findByCreator(User creator);
     List<Test> findByType(String type);
-
-    String submitTest(User user, Long testId, TestSubmissionRequest request);
-    Double calculateScore(Long testId, TestSubmissionRequest request);
+    public Map<String, Object> submitTestAndGetAnalysis(User user, Long testId, TestSubmissionRequest request);
 }
